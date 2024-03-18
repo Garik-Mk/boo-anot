@@ -1,0 +1,3 @@
+shell clear
+make some test
+python print('All commands done')
