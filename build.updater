@@ -1,2 +1,5 @@
 shell pip install -r requirements.txt
 shell python build.py
+shell rm -rf ./dist
+shell rmdir /s dist
+shell pyinstaller boo_anot.py --noconsole --onefile
