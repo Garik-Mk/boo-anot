@@ -27,7 +27,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.label_folder: str
 
         self.file_paths: dict
-        self.current_image: QtWidgets.QListWidgetItem
+        self.current_image = None
 
         self.actionOpen_Folder.triggered.connect(partial(self.open_file_selection_dialog, data=True))
         self.actionOpen_Labels_Folder.triggered.connect(partial(self.open_file_selection_dialog, data=False))
@@ -37,6 +37,8 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
 
         self.next_image.clicked.connect(partial(self.open_next_image, 1))
         self.prev_image.clicked.connect(partial(self.open_next_image, -1))
+
+        self.setFocusPolicy(Qt.StrongFocus)
 
 
     @pyqtSlot()
@@ -86,3 +88,19 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             item = items[0]
             self.item_list.setCurrentItem(item)
             self.item_list.scrollToItem(item)
+
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        if key in (Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4):
+            self.set_label(key - Qt.Key_0)
+        else:
+            super().keyPressEvent(event)
+
+
+    def set_label(self, label_id):
+        if self.current_image is None:
+            print('No image given')
+            return
+        print(f'Label set for {self.file_paths[self.current_image.text()]} - {label_id}')
+        self.open_next_image()
