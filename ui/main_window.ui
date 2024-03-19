@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0">
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -37,73 +37,36 @@
      </layout>
     </item>
     <item>
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>TextLabel</string>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0,0">
       <item>
-       <widget class="QPushButton" name="set_label_0">
+       <widget class="QLabel" name="image_label">
         <property name="text">
-         <string>Set 0</string>
+         <string>TextLabel</string>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="set_label_1">
-        <property name="text">
-         <string>Set 1</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="set_label_2">
-        <property name="text">
-         <string>Set 2</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="current_label_label">
-        <property name="text">
-         <string>Current Label</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="current_label">
-        <property name="inputMask">
-         <string notr="true"/>
-        </property>
-        <property name="text">
-         <string notr="true"/>
-        </property>
-        <property name="readOnly">
+        <property name="scaledContents">
          <bool>true</bool>
         </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
        </widget>
       </item>
       <item>
-       <spacer name="verticalSpacer">
+       <widget class="Line" name="line">
         <property name="orientation">
-         <enum>Qt::Vertical</enum>
+         <enum>Qt::Horizontal</enum>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="current_label">
+        <property name="text">
+         <string>None</string>
         </property>
-       </spacer>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -120,7 +83,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File'</string>
+     <string>File</string>
     </property>
     <addaction name="actionOpen_Folder"/>
     <addaction name="actionOpen_Labels_Folder"/>

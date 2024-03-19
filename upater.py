@@ -108,9 +108,8 @@ class Updater():
                     break
     
     def run_update_sequence():
-        if Updater.check_for_update():
-            Updater.pull_from_remote()
-            Updater.run_build()
+        Updater.pull_from_remote()
+        Updater.run_build()
 
 if __name__ == '__main__':
     Updater.build_file_path = 'build.updater'

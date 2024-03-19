@@ -1,3 +1,2 @@
-shell clear
-make some test
-python print('All commands done')
+shell pip install -r requirements.txt
+shell python build.py
