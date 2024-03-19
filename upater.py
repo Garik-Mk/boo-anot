@@ -13,7 +13,7 @@ Functions:
     None
 
 Build file creation:
-    Build instructions must be contained in build.updater file. 
+    Build instructions must be contained in build.updater file.
     Each line in build.updater file represents separate command,
     starting with these keywords:
         python - command must be run in python environment
@@ -31,9 +31,9 @@ import subprocess
 
 class Updater():
     """Checks if current branch is behind remote,
-        pulls from remote and runs instructions from 
+        pulls from remote and runs instructions from
         'build.updater' file
-        
+
         Static parameters:
             build_file_path: str
     """
@@ -54,8 +54,8 @@ class Updater():
             print(f"An error occurred: {e}")
             return False
         return True
-        
-          
+
+
     def check_for_update() -> bool:
         """Check, if remote is ahead of current branch
 
@@ -89,7 +89,7 @@ class Updater():
 
     def run_build() -> bool:
         """Reads 'build.updater' file and executes all commands from it
-               
+
         Returns:
             bool: True if all comands done
         """
@@ -106,7 +106,7 @@ class Updater():
                 case _:
                     print(f'You have mistake in "{command}", "{command_sequence[0]}" type not defined')
                     break
-    
+
     def run_update_sequence():
         Updater.pull_from_remote()
         Updater.run_build()
