@@ -2,7 +2,7 @@ import os
 from functools import partial
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSlot, Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QIcon
 from ui.boo_anot_qt import Ui_ImageViewer
 
 
@@ -21,16 +21,21 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
     def __init__(self, *args, obj=None, **kwargs):
         super(BooWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
+        icon = QIcon('logo.png')
+        self.setWindowIcon(icon)
         self.data_folder: str
         self.label_folder: str
-        
+
         self.file_paths: dict
         self.current_image: QtWidgets.QListWidgetItem
-        
+
         self.actionOpen_Folder.triggered.connect(partial(self.open_file_selection_dialog, data=True))
         self.actionOpen_Labels_Folder.triggered.connect(partial(self.open_file_selection_dialog, data=False))
-        
+
         self.item_list.itemDoubleClicked.connect(self.open_image)
+
+        self.next_image.clicked.connect(partial(self.open_next_image, 1))
+        self.prev_image.clicked.connect(partial(self.open_next_image, -1))
 
 
     @pyqtSlot()
@@ -45,13 +50,13 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             self.load_image_in_list()
         else:
             self.label_folder = fname
-    
-    
+
+
     def load_image_in_list(self) -> None:
         self.file_paths = list_files(self.data_folder)
         self.item_list.addItems(self.file_paths.keys())
-    
-    
+
+
     def open_image(self, item):
         image_path = self.file_paths[item.text()]
         pixmap = QPixmap(image_path)
@@ -61,3 +66,14 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             self.current_image = item
         else:
             self.image_label.setText("Failed to load image")
+
+
+    def open_next_image(self, step=1):
+        current = self.item_list.currentItem()
+        idx = self.item_list.indexFromItem(current)
+        row = idx.row()
+        next_index = self.item_list.model().index(row + step, 0)
+        next_item = self.item_list.itemFromIndex(next_index)
+        if next_item:
+            self.item_list.setCurrentItem(next_item)
+            self.open_image(next_item)
