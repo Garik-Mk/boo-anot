@@ -33,6 +33,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.actionOpen_Labels_Folder.triggered.connect(partial(self.open_file_selection_dialog, data=False))
 
         self.item_list.itemDoubleClicked.connect(self.open_image)
+        self.search.textChanged.connect(self.search_and_scroll)
 
         self.next_image.clicked.connect(partial(self.open_next_image, 1))
         self.prev_image.clicked.connect(partial(self.open_next_image, -1))
@@ -77,3 +78,11 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         if next_item:
             self.item_list.setCurrentItem(next_item)
             self.open_image(next_item)
+
+
+    def search_and_scroll(self):
+        items = self.item_list.findItems(self.search.text(), Qt.MatchContains)
+        if items:
+            item = items[0]
+            self.item_list.setCurrentItem(item)
+            self.item_list.scrollToItem(item)
