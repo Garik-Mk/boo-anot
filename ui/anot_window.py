@@ -1,7 +1,8 @@
 import os
 from functools import partial
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtGui import QPixmap
 from ui.boo_anot_qt import Ui_ImageViewer
 
 
@@ -24,13 +25,16 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.label_folder: str
         
         self.file_paths: dict
+        self.current_image: QtWidgets.QListWidgetItem
         
         self.actionOpen_Folder.triggered.connect(partial(self.open_file_selection_dialog, data=True))
         self.actionOpen_Labels_Folder.triggered.connect(partial(self.open_file_selection_dialog, data=False))
+        
+        self.item_list.itemDoubleClicked.connect(self.open_image)
 
 
     @pyqtSlot()
-    def open_file_selection_dialog(self, data):
+    def open_file_selection_dialog(self, data: bool) -> None:
         fname = QtWidgets.QFileDialog.getExistingDirectory(
             self,
             "Open File",
@@ -42,6 +46,18 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         else:
             self.label_folder = fname
     
-    def load_image_in_list(self):
+    
+    def load_image_in_list(self) -> None:
         self.file_paths = list_files(self.data_folder)
         self.item_list.addItems(self.file_paths.keys())
+    
+    
+    def open_image(self, item):
+        image_path = self.file_paths[item.text()]
+        pixmap = QPixmap(image_path)
+        if not pixmap.isNull():
+            scaled_pixmap = pixmap.scaled(self.image_label.size(), aspectRatioMode=Qt.KeepAspectRatio)
+            self.image_label.setPixmap(scaled_pixmap)
+            self.current_image = item
+        else:
+            self.image_label.setText("Failed to load image")

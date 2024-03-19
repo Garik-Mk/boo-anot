@@ -37,7 +37,7 @@ class Ui_ImageViewer(object):
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.image_label = QtWidgets.QLabel(self.centralwidget)
-        self.image_label.setScaledContents(True)
+        self.image_label.setScaledContents(False)
         self.image_label.setAlignment(QtCore.Qt.AlignCenter)
         self.image_label.setObjectName("image_label")
         self.verticalLayout_2.addWidget(self.image_label)
