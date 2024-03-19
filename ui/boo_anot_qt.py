@@ -84,7 +84,7 @@ class Ui_ImageViewer(object):
         self.search.setPlaceholderText(_translate("ImageViewer", "Search..."))
         self.next_image.setText(_translate("ImageViewer", "Next"))
         self.prev_image.setText(_translate("ImageViewer", "Prev"))
-        self.image_label.setText(_translate("ImageViewer", "TextLabel"))
+        self.image_label.setText(_translate("ImageViewer", "No image opened"))
         self.current_label.setText(_translate("ImageViewer", "None"))
         self.menuFile.setTitle(_translate("ImageViewer", "File"))
         self.actionOpen_Folder.setText(_translate("ImageViewer", "Open Data Folder"))

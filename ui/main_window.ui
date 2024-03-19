@@ -48,7 +48,7 @@
       <item>
        <widget class="QLabel" name="image_label">
         <property name="text">
-         <string>TextLabel</string>
+         <string>No image opened</string>
         </property>
         <property name="scaledContents">
          <bool>true</bool>
