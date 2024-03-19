@@ -21,6 +21,13 @@
        <widget class="QListWidget" name="item_list"/>
       </item>
       <item>
+       <widget class="QLineEdit" name="search">
+        <property name="placeholderText">
+         <string>Search...</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="next_image">
         <property name="text">
          <string>Next</string>

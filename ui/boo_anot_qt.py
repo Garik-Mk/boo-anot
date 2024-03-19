@@ -24,6 +24,9 @@ class Ui_ImageViewer(object):
         self.item_list = QtWidgets.QListWidget(self.centralwidget)
         self.item_list.setObjectName("item_list")
         self.verticalLayout.addWidget(self.item_list)
+        self.search = QtWidgets.QLineEdit(self.centralwidget)
+        self.search.setObjectName("search")
+        self.verticalLayout.addWidget(self.search)
         self.next_image = QtWidgets.QPushButton(self.centralwidget)
         self.next_image.setObjectName("next_image")
         self.verticalLayout.addWidget(self.next_image)
@@ -78,6 +81,7 @@ class Ui_ImageViewer(object):
     def retranslateUi(self, ImageViewer):
         _translate = QtCore.QCoreApplication.translate
         ImageViewer.setWindowTitle(_translate("ImageViewer", "MainWindow"))
+        self.search.setPlaceholderText(_translate("ImageViewer", "Search..."))
         self.next_image.setText(_translate("ImageViewer", "Next"))
         self.prev_image.setText(_translate("ImageViewer", "Prev"))
         self.image_label.setText(_translate("ImageViewer", "TextLabel"))
