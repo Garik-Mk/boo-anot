@@ -15,7 +15,8 @@ def list_files(directory: str) -> dict:
         directory: The directory path to search for image files.
 
     Returns:
-        A dictionary containing file names as keys and their corresponding paths as values.
+        A dictionary containing file names as keys and their 
+        corresponding paths as values.
     """
     dir_dict = {}
     # Add more extensions if needed
@@ -116,7 +117,8 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             self.current_image = item
             label_file = os.path.join(
                 self.label_folder, 
-                os.path.basename(os.path.dirname(image_path)) + '__' + replace_extension_with_txt(item.text())
+                os.path.basename(os.path.dirname(image_path))\
+                    + '__' + replace_extension_with_txt(item.text())
             )
             if os.path.exists(label_file):
                 with open(label_file, 'r') as fd:
@@ -148,7 +150,8 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
 
     def search_and_scroll(self):
         """
-        Search for images in the list widget based on the text entered in the search box and scroll to the first match.
+        Search for images in the list widget based on the text entered in the
+        search box and scroll to the first match.
         """
         items = self.item_list.findItems(
             self.search.text(), Qt.MatchContains
@@ -184,7 +187,11 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             label_id: A str representing the label ID.
         """
         image_full_path = self.file_paths[self.current_image.text()]
-        label_path = os.path.join(self.label_folder, replace_extension_with_txt(self.current_image.text()))
+        label_path = os.path.join(
+            self.label_folder, replace_extension_with_txt(
+                self.current_image.text()
+            )
+        )
         if self.current_image is None:
             print('No image given')
             return
