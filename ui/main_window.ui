@@ -44,17 +44,14 @@
      </layout>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0,0">
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,1">
       <item>
-       <widget class="QLabel" name="image_label">
+       <widget class="QLabel" name="current_label">
         <property name="text">
-         <string>No image opened</string>
-        </property>
-        <property name="scaledContents">
-         <bool>false</bool>
+         <string>None</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignCenter</set>
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -66,12 +63,15 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="current_label">
+       <widget class="QLabel" name="image_label">
         <property name="text">
-         <string>None</string>
+         <string>No image opened</string>
+        </property>
+        <property name="scaledContents">
+         <bool>false</bool>
         </property>
         <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
