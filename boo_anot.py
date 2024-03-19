@@ -16,6 +16,6 @@ def check_for_updates():
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     check_for_updates()
-    schedule_window = BooWindow()
-    schedule_window.show()
+    boo_anot_window = BooWindow()
+    boo_anot_window.show()
     app.exec()
