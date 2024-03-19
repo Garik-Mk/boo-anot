@@ -114,7 +114,10 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             )
             self.image_label.setPixmap(scaled_pixmap)
             self.current_image = item
-            label_file = os.path.join(self.label_folder, replace_extension_with_txt(item.text()))
+            label_file = os.path.join(
+                self.label_folder, 
+                os.path.basename(os.path.dirname(image_path)) + '__' + replace_extension_with_txt(item.text())
+            )
             if os.path.exists(label_file):
                 with open(label_file, 'r') as fd:
                     label = fd.read()
