@@ -87,6 +87,8 @@
     </property>
     <addaction name="actionOpen_Folder"/>
     <addaction name="actionOpen_Labels_Folder"/>
+    <addaction name="separator"/>
+    <addaction name="actionForce_Update"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -99,6 +101,11 @@
   <action name="actionOpen_Labels_Folder">
    <property name="text">
     <string>Open Labels Folder</string>
+   </property>
+  </action>
+  <action name="actionForce_Update">
+   <property name="text">
+    <string>Force Update</string>
    </property>
   </action>
  </widget>

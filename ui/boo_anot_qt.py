@@ -64,8 +64,12 @@ class Ui_ImageViewer(object):
         self.actionOpen_Folder.setObjectName("actionOpen_Folder")
         self.actionOpen_Labels_Folder = QtWidgets.QAction(ImageViewer)
         self.actionOpen_Labels_Folder.setObjectName("actionOpen_Labels_Folder")
+        self.actionForce_Update = QtWidgets.QAction(ImageViewer)
+        self.actionForce_Update.setObjectName("actionForce_Update")
         self.menuFile.addAction(self.actionOpen_Folder)
         self.menuFile.addAction(self.actionOpen_Labels_Folder)
+        self.menuFile.addSeparator()
+        self.menuFile.addAction(self.actionForce_Update)
         self.menubar.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(ImageViewer)
@@ -81,3 +85,4 @@ class Ui_ImageViewer(object):
         self.menuFile.setTitle(_translate("ImageViewer", "File"))
         self.actionOpen_Folder.setText(_translate("ImageViewer", "Open Data Folder"))
         self.actionOpen_Labels_Folder.setText(_translate("ImageViewer", "Open Labels Folder"))
+        self.actionForce_Update.setText(_translate("ImageViewer", "Force Update"))
