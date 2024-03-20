@@ -24,7 +24,9 @@ def list_files(directory: str) -> dict:
     for root, _, files in os.walk(directory):
         for file in files:
             if os.path.splitext(file)[1].lower() in image_extensions:
-                dir_dict[file] = (os.path.join(root, file))
+                display_name = os.path.basename(root)\
+                + '__' + file
+                dir_dict[display_name] = (os.path.join(root, file))
     return dir_dict
 
 
