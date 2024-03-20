@@ -54,10 +54,10 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.file_paths: dict
         self.current_image = None
 
-        self.actionOpen_Folder.triggered.connect(
+        self.actionOpen_Data_Folder.triggered.connect(
             partial(self.open_file_selection_dialog, data=True)
         )
-        self.actionOpen_Labels_Folder.triggered.connect(
+        self.actionOpen_Label_Folder.triggered.connect(
             partial(self.open_file_selection_dialog, data=False)
         )
 

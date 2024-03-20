@@ -6,19 +6,37 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>942</width>
     <height>600</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <family>Consolas</family>
+    <pointsize>10</pointsize>
+    <weight>75</weight>
+    <bold>true</bold>
+   </font>
+  </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Boo Anot</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,1">
+    <property name="spacing">
+     <number>0</number>
+    </property>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QListWidget" name="item_list"/>
+       <widget class="QListWidget" name="item_list">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="lineWidth">
+         <number>1</number>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLineEdit" name="search">
@@ -28,20 +46,31 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="next_image">
-        <property name="text">
-         <string>Next</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="prev_image">
-        <property name="text">
-         <string>Prev</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="prev_image">
+          <property name="text">
+           <string>Prev</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="next_image">
+          <property name="text">
+           <string>Next</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_2">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
     </item>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,1">
@@ -79,12 +108,13 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>942</width>
      <height>26</height>
     </rect>
    </property>
@@ -92,14 +122,11 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen_Folder"/>
-    <addaction name="actionOpen_Labels_Folder"/>
-    <addaction name="separator"/>
-    <addaction name="actionForce_Update"/>
+    <addaction name="actionOpen_Data_Folder"/>
+    <addaction name="actionOpen_Label_Folder"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen_Folder">
    <property name="text">
     <string>Open Data Folder</string>
@@ -113,6 +140,16 @@
   <action name="actionForce_Update">
    <property name="text">
     <string>Force Update</string>
+   </property>
+  </action>
+  <action name="actionOpen_Data_Folder">
+   <property name="text">
+    <string>Open Data Folder</string>
+   </property>
+  </action>
+  <action name="actionOpen_Label_Folder">
+   <property name="text">
+    <string>Open Label Folder</string>
    </property>
   </action>
  </widget>
