@@ -7,6 +7,8 @@ from ui.boo_anot_qt import Ui_ImageViewer
 
 
 
+
+
 def list_files(directory: str) -> dict:
     """
     List files with specified image extensions in the given directory.
