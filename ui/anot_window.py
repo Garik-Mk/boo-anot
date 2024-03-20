@@ -187,16 +187,16 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             label_id: A str representing the label ID.
         """
         image_full_path = self.file_paths[self.current_image.text()]
-        label_path = os.path.join(
-            self.label_folder, replace_extension_with_txt(
-                self.current_image.text()
-            )
+        label_file = os.path.join(
+            self.label_folder, 
+            os.path.basename(os.path.dirname(image_full_path))\
+                + '__' + replace_extension_with_txt(self.current_image.text())
         )
         if self.current_image is None:
             print('No image given')
             return
         try:
-            with open(label_path, 'w') as file:
+            with open(label_file, 'w') as file:
                 file.write(label_id)
             print(f'# Labeled {image_full_path} --- {label_id}')
             self.open_next_image()
