@@ -1,4 +1,8 @@
 __pycache__
 build
+Scripts
+Lib
+Include
+pyvenv.cfg
 dist
 *.spec
