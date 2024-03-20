@@ -64,8 +64,9 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.item_list.itemDoubleClicked.connect(self.open_image)
         self.search.textChanged.connect(self.search_and_scroll)
 
-        self.next_image.clicked.connect(partial(self.open_next_image, 1))
-        self.prev_image.clicked.connect(partial(self.open_next_image, -1))
+        self.next_image_btn.clicked.connect(partial(self.open_next_image, 1))
+        self.prev_image_btn.clicked.connect(partial(self.open_next_image, -1))
+        self.delete_label_btn.clicked.connect(self.delete_label)
 
         self.setFocusPolicy(Qt.StrongFocus)
 
@@ -115,11 +116,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             )
             self.image_label.setPixmap(scaled_pixmap)
             self.current_image = item
-            label_file = os.path.join(
-                self.label_folder, 
-                os.path.basename(os.path.dirname(image_path))\
-                    + '__' + replace_extension_with_txt(item.text())
-            )
+            label_file = self.get_label_file_name()
             if os.path.exists(label_file):
                 with open(label_file, 'r') as fd:
                     label = fd.read()
@@ -187,11 +184,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             label_id: A str representing the label ID.
         """
         image_full_path = self.file_paths[self.current_image.text()]
-        label_file = os.path.join(
-            self.label_folder, 
-            os.path.basename(os.path.dirname(image_full_path))\
-                + '__' + replace_extension_with_txt(self.current_image.text())
-        )
+        label_file = self.get_label_file_name()
         if self.current_image is None:
             print('No image given')
             return
@@ -202,3 +195,20 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             self.open_next_image()
         except Exception as e:
             print(f"Error occurred while creating text file: {e}")
+
+
+    def get_label_file_name(self) -> str:
+        """Generate label file name from base_directory_name + image_name + .txt"""
+        image_full_path = self.file_paths[self.current_image.text()]
+        label_file = os.path.join(
+            self.label_folder, 
+            os.path.basename(os.path.dirname(image_full_path))\
+                + '__' + replace_extension_with_txt(self.current_image.text())
+        )
+        return label_file
+
+
+    def delete_label(self):
+        """Delete the label of the current image."""
+        os.remove(self.get_label_file_name())
+        self.open_image(self.current_image)
