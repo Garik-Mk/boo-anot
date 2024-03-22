@@ -169,6 +169,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
 
         If the pressed key is 1, 2, 3, or 4, call the set_label method.
         Otherwise, call the base behavior of keyPressEvent.
+        Also, keyboard arrows can switch loaded images.
 
         Args:
             event: The key press event.
@@ -176,6 +177,10 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         key = event.key()
         if key in (Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4):
             self.set_label(str(key - Qt.Key_0))
+        elif event.key() == Qt.Key_Left:
+            self.open_next_image(-1)
+        elif event.key() == Qt.Key_Right:
+            self.open_next_image()
         else:
             super().keyPressEvent(event)
 
