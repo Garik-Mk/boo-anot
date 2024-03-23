@@ -178,7 +178,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         """
         key = event.key()
         if key in (Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4):
-            self.set_label(str(key - Qt.Key_0))
+            self.set_label(str(key - Qt.Key_0 - 1))
         elif event.key() == Qt.Key_Left:
             self.open_next_image(-1)
         elif event.key() == Qt.Key_Right:
