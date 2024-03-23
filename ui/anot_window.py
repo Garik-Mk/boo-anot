@@ -113,12 +113,12 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         if self.label_folder is None:
             self.label_folder = self.data_folder
         image_path = self.file_paths[item.text()]
-        pixmap = QPixmap(image_path)
-        if not pixmap.isNull():
-            scaled_pixmap = pixmap.scaled(
+        temp_pixmap = QPixmap(image_path)
+        if not temp_pixmap.isNull():
+            self.pixmap = temp_pixmap.scaled(
                 self.image_label.size(), aspectRatioMode=Qt.KeepAspectRatio
             )
-            self.image_label.setPixmap(scaled_pixmap)
+            self.image_label.setPixmap(self.pixmap)
             self.current_image = item
             label_file = self.get_label_file_name()
             if os.path.exists(label_file):
