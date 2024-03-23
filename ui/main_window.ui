@@ -113,8 +113,8 @@
        </widget>
       </item>
       <item>
-       <layout class="QGridLayout" name="zoom_area">
-        <item row="0" column="0">
+       <layout class="QVBoxLayout" name="zoom_area">
+        <item>
          <widget class="QLabel" name="image_label">
           <property name="text">
            <string>No image opened</string>
@@ -124,6 +124,9 @@
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
+          </property>
+          <property name="indent">
+           <number>0</number>
           </property>
          </widget>
         </item>

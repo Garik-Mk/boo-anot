@@ -17,12 +17,12 @@ def list_files(directory: str) -> dict:
         directory: The directory path to search for image files.
 
     Returns:
-        A dictionary containing file names as keys and their 
+        A dictionary containing file names as keys and their
         corresponding paths as values.
     """
     dir_dict = {}
     # Add more extensions if needed
-    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp'}  
+    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp'}
     for root, _, files in os.walk(directory):
         for file in files:
             if os.path.splitext(file)[1].lower() in image_extensions:
@@ -71,6 +71,8 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.next_image_btn.clicked.connect(partial(self.open_next_image, 1))
         self.prev_image_btn.clicked.connect(partial(self.open_next_image, -1))
         self.delete_label_btn.clicked.connect(self.delete_label)
+
+        self.menuBar.setNativeMenuBar(False)
 
         self.setFocusPolicy(Qt.StrongFocus)
 
@@ -210,7 +212,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         """Generate label file name from base_directory_name + image_name + .txt"""
         image_full_path = self.file_paths[self.current_image.text()]
         label_file = os.path.join(
-            self.label_folder, 
+            self.label_folder,
             os.path.basename(os.path.dirname(image_full_path))\
                 + '__' + replace_extension_with_txt(self.current_image.text())
         )
