@@ -39,19 +39,21 @@ class Updater():
     """
     build_file_path = ''
 
-    def run_shell_command(command_list: list) -> bool:
+    def run_shell_command(command_list: list, unix_system=False) -> bool:
         """Runs command via subproccess
 
         Args:
             command_list (str): commands separeted by spaces
+            unix_system (bool): run python3 instead of python
 
         Returns:
             bool: True if success
         """
+        if unix_system:
+            command_list[0] = command_list[0].replace('python', 'python3')
         try:
             subprocess.run(command_list, capture_output=True, text=True)
         except Exception as e:
-            print(f"An error occurred: {e}")
             return False
         return True
 
@@ -100,7 +102,9 @@ class Updater():
             command_sequence = command.split()
             match command_sequence[0]:
                 case 'shell':
-                    Updater.run_shell_command(command_sequence[1:])
+                    result = Updater.run_shell_command(command_sequence[1:])
+                    if not result:
+                        Updater.run_shell_command(command_sequence[1:], unix_system=True)
                 case 'python':
                     exec(' '.join(command_sequence[1:]))
                 case _:
