@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap, QIcon
 from ui.boo_anot_qt import Ui_ImageViewer
-
+from natsort import natsorted
 
 
 
@@ -102,7 +102,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         Load images from the data folder and populate them in the list widget.
         """
         self.file_paths = list_files(self.data_folder)
-        self.item_list.addItems(self.file_paths.keys())
+        self.item_list.addItems(natsorted(self.file_paths.keys()))
 
 
     def open_image(self, item):
@@ -157,7 +157,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         search box and scroll to the first match.
         """
         items = self.item_list.findItems(
-            self.search.text(), Qt.MatchContains
+            self.search.text(), Qt.MatchStartsWith
         )
         if items:
             item = items[0]
