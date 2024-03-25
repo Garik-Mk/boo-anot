@@ -5,6 +5,12 @@ from ui.anot_window import BooWindow
 from qt_material import apply_stylesheet
 
 def check_for_updates():
+    """
+    Check for updates using the Updater class.
+
+    If updates are available, it prompts the user with a dialog box asking if they want to update.
+    If the user chooses to update, it runs the update sequence.
+    """
     Updater.build_file_path = 'build.updater'
     if Updater.check_for_update():
          reply = QMessageBox.question(None, 'Update Dialog', 'Do you want to update?',
