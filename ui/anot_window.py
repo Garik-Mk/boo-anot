@@ -177,8 +177,8 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             event: The key press event.
         """
         key = event.key()
-        if key in (Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4):
-            self.set_label(str(key - Qt.Key_0 - 1))
+        if key in (Qt.Key_0, Qt.Key_1, Qt.Key_2, Qt.Key_3):
+            self.set_label(str(key - Qt.Key_0))
         elif event.key() == Qt.Key_Left:
             self.open_next_image(-1)
         elif event.key() == Qt.Key_Right:
@@ -213,13 +213,14 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         image_full_path = self.file_paths[self.current_image.text()]
         label_file = os.path.join(
             self.label_folder,
-            os.path.basename(os.path.dirname(image_full_path))\
-                + '__' + replace_extension_with_txt(self.current_image.text())
+            replace_extension_with_txt(self.current_image.text())
         )
         return label_file
 
 
     def delete_label(self):
         """Delete the label of the current image."""
-        os.remove(self.get_label_file_name())
+        label_file_path = self.get_label_file_name()
+        if os.path.isfile(label_file_path):
+            os.remove(label_file_path)
         self.open_image(self.current_image)
