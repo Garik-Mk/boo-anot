@@ -1,4 +1,5 @@
 import os
+import shutil
 from functools import partial
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSlot, Qt
@@ -9,12 +10,13 @@ from natsort import natsorted
 
 
 
-def list_files(directory: str) -> dict:
+def list_files(directory: str, same_folder: bool=False, remove_extensions=False) -> dict:
     """
     List files with specified image extensions in the given directory.
 
     Args:
         directory: The directory path to search for image files.
+        same_folder: Are the labels and images in same folder
 
     Returns:
         A dictionary containing file names as keys and their
@@ -26,8 +28,13 @@ def list_files(directory: str) -> dict:
     for root, _, files in os.walk(directory):
         for file in files:
             if os.path.splitext(file)[1].lower() in image_extensions:
-                display_name = os.path.basename(root)\
-                + '__' + file
+                if same_folder:
+                    display_name = file
+                else:
+                    display_name = os.path.basename(root)\
+                    + '__' + file
+                if remove_extensions:
+                    display_name = os.path.splitext(display_name)[0]
                 dir_dict[display_name] = (os.path.join(root, file))
     return dir_dict
 
@@ -57,12 +64,19 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
 
         self.file_paths: dict
         self.current_image = None
+        self.same_folder = False
 
         self.actionOpen_Data_Folder.triggered.connect(
             partial(self.open_file_selection_dialog, data=True)
         )
         self.actionOpen_Label_Folder.triggered.connect(
             partial(self.open_file_selection_dialog, data=False)
+        )
+        self.actionSame_Data_and_Label_Folder.triggered.connect(
+            self.reverse_label_data_folder_state
+        )
+        self.actionMove_images_to_labels.triggered.connect(
+            self.move_images_to_labels
         )
 
         self.item_list.itemDoubleClicked.connect(self.open_image)
@@ -101,7 +115,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         """
         Load images from the data folder and populate them in the list widget.
         """
-        self.file_paths = list_files(self.data_folder)
+        self.file_paths = list_files(self.data_folder, self.same_folder)
         self.item_list.addItems(natsorted(self.file_paths.keys()))
 
 
@@ -210,7 +224,6 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
 
     def get_label_file_name(self) -> str:
         """Generate label file name from base_directory_name + image_name + .txt"""
-        image_full_path = self.file_paths[self.current_image.text()]
         label_file = os.path.join(
             self.label_folder,
             replace_extension_with_txt(self.current_image.text())
@@ -224,3 +237,43 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         if os.path.isfile(label_file_path):
             os.remove(label_file_path)
         self.open_image(self.current_image)
+
+
+    def reverse_label_data_folder_state(self) -> None:
+        """Reverses state of using same folder for images and labels"""
+        self.same_folder = not self.same_folder
+
+
+    def move_images_to_labels(self) -> None:
+        """Iterate from label files in label_folder and move corresponding images to that directory"""
+        if self.same_folder:
+            print('You need to specify different paths for data and labels')
+            return
+        if self.label_folder is None:
+            print('No labels found')
+            return
+        label_folder_content = os.listdir(self.label_folder)
+        label_files = []
+        for file_name in label_folder_content:
+            if file_name.endswith('.txt'):
+                label_files.append(file_name)
+        reply = QtWidgets.QMessageBox.question(None, 
+            'File transfer', 
+            f'Do you want to move {len(label_files)} images to {self.label_folder}?',
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, 
+            QtWidgets.QMessageBox.Yes
+        )
+        if reply == QtWidgets.QMessageBox.No:
+            return
+        image_data = list_files(
+            self.data_folder, 
+            self.same_folder, 
+            remove_extensions=True
+        )
+        for file_name in label_files:
+            file_base_name = os.path.splitext(file_name)[0]
+            current_path = image_data[file_base_name]
+            ext = os.path.splitext(current_path)[1]
+            new_path = os.path.join(self.label_folder, f'{file_base_name}{ext}')
+            print(f'{current_path} >>> {new_path}')
+            shutil.copy(current_path, new_path)

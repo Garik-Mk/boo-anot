@@ -178,8 +178,16 @@
     </property>
     <addaction name="actionOpen_Data_Folder"/>
     <addaction name="actionOpen_Label_Folder"/>
+    <addaction name="actionSame_Data_and_Label_Folder"/>
+   </widget>
+   <widget class="QMenu" name="menuData">
+    <property name="title">
+     <string>Data</string>
+    </property>
+    <addaction name="actionMove_images_to_labels"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuData"/>
   </widget>
   <action name="actionOpen_Folder">
    <property name="text">
@@ -204,6 +212,19 @@
   <action name="actionOpen_Label_Folder">
    <property name="text">
     <string>Open Label Folder</string>
+   </property>
+  </action>
+  <action name="actionSame_Data_and_Label_Folder">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Same Data and Label Folder</string>
+   </property>
+  </action>
+  <action name="actionMove_images_to_labels">
+   <property name="text">
+    <string>Move images to labels</string>
    </property>
   </action>
  </widget>
