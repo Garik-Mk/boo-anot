@@ -179,6 +179,7 @@
     <addaction name="actionOpen_Data_Folder"/>
     <addaction name="actionOpen_Label_Folder"/>
     <addaction name="actionSame_Data_and_Label_Folder"/>
+    <addaction name="actionOpen_NPY_files"/>
    </widget>
    <widget class="QMenu" name="menuData">
     <property name="title">
@@ -231,6 +232,14 @@
   <action name="actionAdd_number_to_each_filename_end">
    <property name="text">
     <string>Add number to each filename end</string>
+   </property>
+  </action>
+  <action name="actionOpen_NPY_files">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Open NPY files</string>
    </property>
   </action>
  </widget>

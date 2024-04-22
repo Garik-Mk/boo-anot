@@ -7,3 +7,4 @@ pyvenv.cfg
 dist
 *.spec
 ui/boo_anot_qt.py
+temp.png

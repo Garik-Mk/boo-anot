@@ -1,16 +1,17 @@
 import os
 import shutil
 from functools import partial
+import numpy as np
+import matplotlib.pyplot as plt
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSlot, Qt
-from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtGui import QPixmap, QIcon, QImage
 from ui.boo_anot_qt import Ui_ImageViewer
 from natsort import natsorted
 
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
-
-
-def list_files(directory: str, same_folder: bool=False, remove_extensions=False) -> dict:
+def list_files(directory: str, same_folder: bool=False, remove_extensions=False, npy=False) -> dict:
     """
     List files with specified image extensions in the given directory.
 
@@ -24,7 +25,10 @@ def list_files(directory: str, same_folder: bool=False, remove_extensions=False)
     """
     dir_dict = {}
     # Add more extensions if needed
-    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp'}
+    if npy:
+        image_extensions = {'.npy'}
+    else:
+        image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp'}
     for root, _, files in os.walk(directory):
         for file in files:
             if os.path.splitext(file)[1].lower() in image_extensions:
@@ -53,6 +57,58 @@ def replace_extension_with_txt(file_path: str) -> str:
     return base_name + '.txt'
 
 
+def magnitude(chirp, radar_data_type='RI'):
+    """ Calculate magnitude of a chirp
+    
+    Args:
+        chirp: np.array
+            radar data of one chirp (w x h x 2) or (2 x w x h)
+        
+        radar_data_type: str
+            current available types include 'RI', 'RISEP', 'AP', 'APSEP'
+    
+    Returns:
+        Magnitude map for the input chirp (w x h)
+    """
+    c0, c1, c2 = chirp.shape
+    if radar_data_type == 'RI' or radar_data_type == 'RISEP':
+        if c0 == 2:
+            chirp_abs = np.sqrt(chirp[0, :, :] ** 2 + chirp[1, :, :] ** 2)
+        elif c2 == 2:
+            chirp_abs = np.sqrt(chirp[:, :, 0] ** 2 + chirp[:, :, 1] ** 2)
+        else:
+            raise ValueError
+    elif radar_data_type == 'AP' or radar_data_type == 'APSEP':
+        if c0 == 2:
+            chirp_abs = chirp[0, :, :]
+        elif c2 == 2:
+            chirp_abs = chirp[:, :, 0]
+        else:
+            raise ValueError
+    else:
+        raise ValueError
+    return chirp_abs
+
+
+def open_npy_image(npy_file_path):
+    """Open given npy file as qpixmap object
+    
+    Args:
+        npy_file_path: str
+            Path to the file
+    """
+    tmp_file = os.path.join(BASE_PATH, "temp.png")
+    os.remove(tmp_file)
+    numpy_array = np.load(npy_file_path)
+    chirp_abs = magnitude(numpy_array)
+    plt.imshow(chirp_abs, origin='lower')
+    plt.colorbar()
+    plt.savefig(tmp_file)
+    plt.close()
+    newpxmap = QPixmap(tmp_file)
+    return newpxmap
+
+
 class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
     def __init__(self, *args, obj=None, **kwargs):
         super(BooWindow, self).__init__(*args, **kwargs)
@@ -65,6 +121,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.file_paths: dict
         self.current_image = None
         self.same_folder = False
+        self.npy = False
 
         self.actionOpen_Data_Folder.triggered.connect(
             partial(self.open_file_selection_dialog, data=True)
@@ -74,6 +131,9 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         )
         self.actionSame_Data_and_Label_Folder.triggered.connect(
             self.reverse_label_data_folder_state
+        )
+        self.actionOpen_NPY_files.triggered.connect(
+            self.reverse_npy_data_state
         )
         self.actionMove_images_to_labels.triggered.connect(
             self.move_images_to_labels
@@ -138,7 +198,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         Load images from the data folder and populate them in the list widget.
         """
         self.item_list.clear()
-        self.file_paths = list_files(self.data_folder, self.same_folder)
+        self.file_paths = list_files(self.data_folder, self.same_folder, npy=self.npy)
         self.item_list.addItems(natsorted(self.file_paths.keys()))
 
 
@@ -152,7 +212,10 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         if self.label_folder is None:
             self.label_folder = self.data_folder
         image_path = self.file_paths[item.text()]
-        temp_pixmap = QPixmap(image_path)
+        if self.npy:
+            temp_pixmap = open_npy_image(image_path)
+        else:
+            temp_pixmap = QPixmap(image_path)
         if not temp_pixmap.isNull():
             self.pixmap = temp_pixmap.scaled(
                 self.image_label.size(), aspectRatioMode=Qt.KeepAspectRatio
@@ -266,6 +329,9 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         """Reverses state of using same folder for images and labels"""
         self.same_folder = not self.same_folder
 
+    def reverse_npy_data_state(self) -> None:
+        """Reverses state of npy files loading flag"""
+        self.npy = not self.npy
 
     def move_images_to_labels(self) -> None:
         """Iterate from label files in label_folder and move corresponding images to that directory"""
@@ -291,7 +357,8 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         image_data = list_files(
             self.data_folder,
             self.same_folder,
-            remove_extensions=True
+            remove_extensions=True,
+            npy=self.npy
         )
         for file_name in label_files:
             file_base_name = os.path.splitext(file_name)[0]
