@@ -78,6 +78,9 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.actionMove_images_to_labels.triggered.connect(
             self.move_images_to_labels
         )
+        self.actionAdd_number_to_each_filename_end.triggered.connect(
+            self.add_integer_to_filenames
+        )
 
         self.item_list.itemDoubleClicked.connect(self.open_image)
         self.search.textChanged.connect(self.search_and_scroll)
@@ -89,6 +92,25 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.menuBar.setNativeMenuBar(False)
 
         self.setFocusPolicy(Qt.StrongFocus)
+
+
+    def add_integer_to_filenames(self):
+        """
+        Traverse through whole directory, add to each file name
+        an underscore and given integer
+
+        Args:
+            directory: The directory path
+        """
+        integer, ok_pressed = QtWidgets.QInputDialog.getInt(None, "Enter Integer", "Please enter an integer:", value=0)
+        for root, dirs, files in os.walk(self.data_folder):
+            for file_name in files:
+                file_path = os.path.join(root, file_name)
+                base_name, extension = os.path.splitext(file_name)
+                new_file_name = f"{base_name}_{integer}{extension}"
+                os.rename(file_path, os.path.join(root, new_file_name))
+                print(f"Renamed '{file_name}' to '{new_file_name}'")
+        self.load_image_in_list()
 
 
     @pyqtSlot()
@@ -115,6 +137,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         """
         Load images from the data folder and populate them in the list widget.
         """
+        self.item_list.clear()
         self.file_paths = list_files(self.data_folder, self.same_folder)
         self.item_list.addItems(natsorted(self.file_paths.keys()))
 
@@ -191,7 +214,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             event: The key press event.
         """
         key = event.key()
-        if key in (Qt.Key_0, Qt.Key_1, Qt.Key_2, Qt.Key_3):
+        if key in (Qt.Key_0, Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5):
             self.set_label(str(key - Qt.Key_0))
         elif event.key() == Qt.Key_Left:
             self.open_next_image(-1)
@@ -257,23 +280,24 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         for file_name in label_folder_content:
             if file_name.endswith('.txt'):
                 label_files.append(file_name)
-        reply = QtWidgets.QMessageBox.question(None, 
-            'File transfer', 
+        reply = QtWidgets.QMessageBox.question(None,
+            'File transfer',
             f'Do you want to move {len(label_files)} images to {self.label_folder}?',
-            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, 
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
             QtWidgets.QMessageBox.Yes
         )
         if reply == QtWidgets.QMessageBox.No:
             return
         image_data = list_files(
-            self.data_folder, 
-            self.same_folder, 
+            self.data_folder,
+            self.same_folder,
             remove_extensions=True
         )
         for file_name in label_files:
             file_base_name = os.path.splitext(file_name)[0]
-            current_path = image_data[file_base_name]
-            ext = os.path.splitext(current_path)[1]
-            new_path = os.path.join(self.label_folder, f'{file_base_name}{ext}')
-            print(f'{current_path} >>> {new_path}')
-            shutil.copy(current_path, new_path)
+            if file_base_name in image_data:
+                current_path = image_data[file_base_name]
+                ext = os.path.splitext(current_path)[1]
+                new_path = os.path.join(self.label_folder, f'{file_base_name}{ext}')
+                print(f'{current_path} >>> {new_path}')
+                shutil.copy(current_path, new_path)

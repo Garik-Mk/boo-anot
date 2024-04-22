@@ -96,7 +96,7 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>None - 0, Human -1, Car - 2, Other -3 </string>
+           <string>Clear Noise - 0, Human -1, Car - 2, Noise w/h line -3, Noisy Noise - 4  </string>
           </property>
          </widget>
         </item>
@@ -169,7 +169,7 @@
      <x>0</x>
      <y>0</y>
      <width>942</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -185,6 +185,7 @@
      <string>Data</string>
     </property>
     <addaction name="actionMove_images_to_labels"/>
+    <addaction name="actionAdd_number_to_each_filename_end"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
@@ -225,6 +226,11 @@
   <action name="actionMove_images_to_labels">
    <property name="text">
     <string>Move images to labels</string>
+   </property>
+  </action>
+  <action name="actionAdd_number_to_each_filename_end">
+   <property name="text">
+    <string>Add number to each filename end</string>
    </property>
   </action>
  </widget>
