@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap, QIcon, QImage
-from ui.boo_anot_qt import Ui_ImageViewer
+from main.boo_anot_qt import Ui_ImageViewer
 from natsort import natsorted
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))

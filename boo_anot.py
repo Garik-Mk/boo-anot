@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from updater import Updater
-from ui.anot_window import BooWindow
+from main.anot_window import BooWindow
 from qt_material import apply_stylesheet
 
 def check_for_updates():
