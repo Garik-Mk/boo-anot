@@ -8,6 +8,7 @@ from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap, QIcon
 
 from main.boo_anot_qt import Ui_ImageViewer
+from main.processor_window import ProcessorWindow
 from main.utils import list_files, open_npy_image, replace_extension_with_txt
 
 MAIN_BASE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -19,7 +20,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.setupUi(self)
         icon = QIcon('logo.png')
         self.setWindowIcon(icon)
-        self.data_folder: str
+        self.data_folder = None
         self.label_folder = None
 
         self.file_paths: dict
@@ -44,6 +45,9 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         )
         self.actionAdd_number_to_each_filename_end.triggered.connect(
             self.add_integer_to_filenames
+        )
+        self.actionOpen_Data_Processor.triggered.connect(
+            self.open_data_processor
         )
 
         self.item_list.itemDoubleClicked.connect(self.open_image)
@@ -236,6 +240,16 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
     def reverse_npy_data_state(self) -> None:
         """Reverses state of npy files loading flag"""
         self.npy = not self.npy
+
+
+    def open_data_processor(self) -> None:
+        """Open data processor window"""
+        self.data_processor = ProcessorWindow()
+        self.close()
+        self.data_processor.show()
+        self.data_processor.data_folder = self.data_folder
+        self.data_processor.load_image_in_list()
+
 
     def move_images_to_labels(self) -> None:
         """Iterate from label files in label_folder and move corresponding images to that directory"""

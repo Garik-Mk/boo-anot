@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>942</width>
+    <width>1000</width>
     <height>600</height>
    </rect>
   </property>
@@ -168,7 +168,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>942</width>
+     <width>1000</width>
      <height>21</height>
     </rect>
    </property>
@@ -187,6 +187,7 @@
     </property>
     <addaction name="actionMove_images_to_labels"/>
     <addaction name="actionAdd_number_to_each_filename_end"/>
+    <addaction name="actionOpen_Data_Processor"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
@@ -240,6 +241,11 @@
    </property>
    <property name="text">
     <string>Open NPY files</string>
+   </property>
+  </action>
+  <action name="actionOpen_Data_Processor">
+   <property name="text">
+    <string>Open Data Processor</string>
    </property>
   </action>
  </widget>

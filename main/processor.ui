@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>906</width>
+    <width>1000</width>
     <height>600</height>
    </rect>
   </property>
@@ -22,7 +22,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QListWidget" name="listWidget"/>
+        <widget class="QListWidget" name="item_list"/>
        </item>
        <item>
         <widget class="QCheckBox" name="checkBox">
@@ -39,17 +39,9 @@
       <property name="title">
        <string>Current Images</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout" stretch="4,0">
+      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
        <item>
-        <widget class="QFrame" name="imageFrame">
-         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout"/>
-        </widget>
+        <layout class="QHBoxLayout" name="imageFrame"/>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -73,6 +65,26 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Images Per Frame</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="images_per_frame_spin_box">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>10</number>
+           </property>
+           <property name="value">
+            <number>5</number>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>
@@ -85,18 +97,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Images Per Frame</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="spinBox"/>
-         </item>
-        </layout>
+        <layout class="QHBoxLayout" name="horizontalLayout_2"/>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -126,7 +127,14 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox">
+            <property name="minimum">
+             <double>-9999.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>9999.000000000000000</double>
+            </property>
+           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_3">
@@ -136,7 +144,14 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+            <property name="minimum">
+             <double>-9999.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>9999.000000000000000</double>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -185,7 +200,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>906</width>
+     <width>1000</width>
      <height>21</height>
     </rect>
    </property>

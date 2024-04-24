@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_ImageViewer(object):
     def setupUi(self, ImageViewer):
         ImageViewer.setObjectName("ImageViewer")
-        ImageViewer.resize(942, 600)
+        ImageViewer.resize(1000, 600)
         font = QtGui.QFont()
         font.setFamily("Consolas")
         font.setPointSize(10)
@@ -93,7 +93,7 @@ class Ui_ImageViewer(object):
         self.horizontalLayout_2.setStretch(2, 1)
         ImageViewer.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(ImageViewer)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 942, 21))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1000, 21))
         self.menuBar.setObjectName("menuBar")
         self.menuFile = QtWidgets.QMenu(self.menuBar)
         self.menuFile.setObjectName("menuFile")
@@ -120,12 +120,15 @@ class Ui_ImageViewer(object):
         self.actionOpen_NPY_files = QtWidgets.QAction(ImageViewer)
         self.actionOpen_NPY_files.setCheckable(True)
         self.actionOpen_NPY_files.setObjectName("actionOpen_NPY_files")
+        self.actionOpen_Data_Processor = QtWidgets.QAction(ImageViewer)
+        self.actionOpen_Data_Processor.setObjectName("actionOpen_Data_Processor")
         self.menuFile.addAction(self.actionOpen_Data_Folder)
         self.menuFile.addAction(self.actionOpen_Label_Folder)
         self.menuFile.addAction(self.actionSame_Data_and_Label_Folder)
         self.menuFile.addAction(self.actionOpen_NPY_files)
         self.menuData.addAction(self.actionMove_images_to_labels)
         self.menuData.addAction(self.actionAdd_number_to_each_filename_end)
+        self.menuData.addAction(self.actionOpen_Data_Processor)
         self.menuBar.addAction(self.menuFile.menuAction())
         self.menuBar.addAction(self.menuData.menuAction())
 
@@ -153,3 +156,4 @@ class Ui_ImageViewer(object):
         self.actionMove_images_to_labels.setText(_translate("ImageViewer", "Move images to labels"))
         self.actionAdd_number_to_each_filename_end.setText(_translate("ImageViewer", "Add number to each filename end"))
         self.actionOpen_NPY_files.setText(_translate("ImageViewer", "Open NPY files"))
+        self.actionOpen_Data_Processor.setText(_translate("ImageViewer", "Open Data Processor"))
