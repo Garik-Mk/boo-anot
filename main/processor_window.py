@@ -10,7 +10,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         super(ProcessorWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
 
-        self.count = 5
+        self.count = 1
         self.data_folder = None
         self.images = []
         self.images_data = {}
@@ -43,6 +43,12 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.item_list.addItems(natsorted(self.file_paths.keys()))
 
 
+    def resizeEvent(self, event):
+        """Override resizeEvent to handle window resize events"""
+        super().resizeEvent(event)
+        self.set_images_poses()
+
+
     def images_per_frame_update(self) -> None:
         """
         Create empty labels for new pixmaps to be loaded
@@ -69,7 +75,6 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                 del self.images[-1]
         self.count = new_count
         self.set_images_poses()
-        self.apply_data()
 
 
     def set_images_poses(self):
@@ -77,6 +82,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             x_step = 1 / self.count
             pos = self.move_label_percent(label, i*x_step, 0.5)
             self.base_poses[label] = pos
+        self.apply_data()
 
 
     def move_label_percent(self, label: QtWidgets.QLabel, x_percent, y_percent) -> tuple[int]:
@@ -91,7 +97,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         if self.selected_label:
             self.selected_label.setStyleSheet('border: none; font: italic 30pt "Consolas";')
         self.selected_label = label
-        self.selected_label.setStyleSheet('border: 2px solid red; font: italic 30pt "Consolas";')
+        self.selected_label.setStyleSheet('border: 2px solid red; font: italic 25pt "Consolas"; padding: 0px; margin: 0px;')
         self.currentX.setValue(self.images_data[self.selected_label].x)
         self.currentY.setValue(self.images_data[self.selected_label].y)
 
@@ -104,7 +110,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
     def apply_y_offset(self) -> None:
         """Apply x axis offset to selected image in the frame"""
-        self.images_data[self.selected_label].y = self.currentY.value()
+        self.images_data[self.selected_label].y = -self.currentY.value()
         self.apply_data()
 
 
@@ -113,8 +119,8 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         for label in self.images:
             current_pos = self.base_poses[label]
             new_pos = QtCore.QPoint(
-                self.images_data[label].x + current_pos[0],
-                self.images_data[label].y + current_pos[1]
+                int(self.images_data[label].x * self.imageFrame.width() + current_pos[0]),
+                int(self.images_data[label].y * self.imageFrame.height() + current_pos[1])
             )
             if (new_pos.x() < 0 or new_pos.y() < 0) or\
             (new_pos.x() > self.imageFrame.size().width() or
