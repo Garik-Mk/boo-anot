@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,10,0">
+   <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,1,0">
     <item>
      <widget class="QGroupBox" name="groupBox_3">
       <property name="title">
@@ -24,24 +24,17 @@
        <item>
         <widget class="QListWidget" name="item_list"/>
        </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox">
-         <property name="text">
-          <string>Frames intersection</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
     </item>
     <item>
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
-       <string>Current Images</string>
+       <string>Preview</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
        <item>
-        <layout class="QHBoxLayout" name="imageFrame"/>
+        <widget class="QWidget" name="imageFrame" native="true"/>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -78,7 +71,7 @@
             <number>1</number>
            </property>
            <property name="maximum">
-            <number>10</number>
+            <number>32</number>
            </property>
            <property name="value">
             <number>5</number>
@@ -126,16 +119,6 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox">
-            <property name="minimum">
-             <double>-9999.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>9999.000000000000000</double>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_3">
             <property name="text">
@@ -143,13 +126,17 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="currentX">
             <property name="minimum">
-             <double>-9999.000000000000000</double>
+             <number>-99</number>
             </property>
-            <property name="maximum">
-             <double>9999.000000000000000</double>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="currentY">
+            <property name="minimum">
+             <number>-99</number>
             </property>
            </widget>
           </item>
@@ -182,6 +169,20 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_3">
+         <property name="text">
+          <string>Process Current Frame</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox">
+         <property name="text">
+          <string>Frames intersection</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushButton">

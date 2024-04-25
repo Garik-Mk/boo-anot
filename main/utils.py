@@ -2,7 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from PyQt5.QtGui import QPixmap
-from natsort import natsorted
+from PyQt5.QtWidgets import QLabel
 
 UTILS_BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -103,3 +103,15 @@ def open_npy_image(npy_file_path):
     plt.close()
     newpxmap = QPixmap(tmp_file)
     return newpxmap
+
+
+class ImageWrapper():
+    def __init__(self, qlabel: QLabel) -> None:
+        self.qlabel = qlabel
+        self.x = 0
+        self.y = 0
+        self.depth_level = 0
+    
+
+    def __repr__(self) -> str:
+        return f'x: {self.x}, y: {self.y}, depth: {self.depth_level}'
