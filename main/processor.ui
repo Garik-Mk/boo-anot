@@ -35,6 +35,9 @@
       <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
        <item>
         <widget class="QWidget" name="imageFrame" native="true">
+         <property name="cursor">
+          <cursorShape>CrossCursor</cursorShape>
+         </property>
          <widget class="QLabel" name="boundingbox">
           <property name="geometry">
            <rect>
@@ -52,13 +55,6 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <item>
-          <widget class="QPushButton" name="pushButton_2">
-           <property name="text">
-            <string>Close current</string>
-           </property>
-          </widget>
-         </item>
          <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">

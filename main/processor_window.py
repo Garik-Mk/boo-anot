@@ -40,6 +40,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.fill_mode_box.currentIndexChanged.connect(
             self.fillmode_select
         )
+        self.imageFrame.installEventFilter(self)
 
         self.images_per_frame_update()
         self.set_images_poses()
@@ -48,6 +49,14 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.get_current_bounding_box()
         self.boundingbox.show()
         self.fillmode_select()
+
+
+    def eventFilter(self, obj, event):
+            if obj == self.imageFrame and event.type() == event.ContextMenu:
+                if self.selected_label:
+                    self.selected_label.setStyleSheet('border: none; font: italic 30pt "Consolas";')
+                    self.selected_label = None
+            return super().eventFilter(obj, event)
 
 
     @QtCore.pyqtSlot()
