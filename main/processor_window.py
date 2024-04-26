@@ -40,6 +40,12 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.fill_mode_box.currentIndexChanged.connect(
             self.fillmode_select
         )
+        self.addFill.clicked.connect(
+            self.fill_label_with_pixmap
+        )
+        self.removeFill.clicked.connect(
+            self.remove_pixmap
+        )
         self.imageFrame.installEventFilter(self)
 
         self.images_per_frame_update()
@@ -49,6 +55,25 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.get_current_bounding_box()
         self.boundingbox.show()
         self.fillmode_select()
+
+
+    def fill_label_with_pixmap(self):
+        if self.filler_image_path is None:
+            return
+        filler = self.filler_pixmap.scaledToWidth(self.images[0].size().width())
+        width = int(self.boundingbox.width())
+        height = int(self.boundingbox.height())
+        image = QtGui.QImage(width, height, QtGui.QImage.Format.Format_ARGB32)
+        painter = QtGui.QPainter(image)
+        for x in range(0, width, filler.width()):
+            for y in range(0, height, filler.height()):
+                painter.drawPixmap(x, y, filler)
+        del painter
+        self.boundingbox.setPixmap(QtGui.QPixmap.fromImage(image))
+
+
+    def remove_pixmap(self):
+        self.boundingbox.clear()
 
 
     def eventFilter(self, obj, event):
@@ -94,6 +119,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         if not temp_pixmap.isNull():
             new_width = self.toolMenu.size().width()
             temp_pixmap = temp_pixmap.scaledToWidth(int(new_width * 0.3))
+            self.filler_pixmap = temp_pixmap
             self.filler_image.setPixmap(temp_pixmap)
 
 
@@ -135,7 +161,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.update_sizes_and_bases()
 
 
-    def update_sizes_and_bases(self, downscale=1):
+    def update_sizes_and_bases(self):
         if not self.images_loaded:
             return
         image_frame_h = self.imageFrame.size().height()
@@ -144,13 +170,13 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                 continue
             old_base = self.base_poses[label]
             each_image_w = int(
-                (self.imageFrame.size().width() / len(self.images)) * downscale
+                (self.imageFrame.size().width() / len(self.images))
             )
-            resized_pixmap = label.pixmap().scaledToWidth(each_image_w)
+            resized_pixmap = label.pixmap().scaledToWidth(int(each_image_w))
             each_image_h = resized_pixmap.size().height()
 
             if (image_frame_h - each_image_h) < 0:
-                resized_pixmap = resized_pixmap.scaledToHeight(image_frame_h * downscale)
+                resized_pixmap = resized_pixmap.scaledToHeight(int(image_frame_h))
                 each_image_h = resized_pixmap.size().height()
 
             offset = len(self.images) * resized_pixmap.size().width()
@@ -221,6 +247,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                 del self.images[-1]
         self.set_images_poses()
         self.update_sizes_and_bases()
+        self.remove_pixmap()
 
 
     def set_images_poses(self):

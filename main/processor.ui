@@ -251,9 +251,16 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_3">
+        <widget class="QPushButton" name="addFill">
          <property name="text">
-          <string>Process Current Frame</string>
+          <string>Add fill</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="removeFill">
+         <property name="text">
+          <string>Remove fill</string>
          </property>
         </widget>
        </item>
