@@ -98,16 +98,13 @@
      </widget>
     </item>
     <item>
-     <widget class="QGroupBox" name="groupBox_2">
+     <widget class="QGroupBox" name="toolMenu">
       <property name="title">
        <string>Tools</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2"/>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <layout class="QHBoxLayout" name="fill_mode">
          <item>
           <widget class="QLabel" name="label_4">
            <property name="text">
@@ -116,19 +113,25 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBox"/>
+          <widget class="QComboBox" name="fill_mode_box">
+           <item>
+            <property name="text">
+             <string>Empty</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Fill With Image</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Fill Random</string>
+            </property>
+           </item>
+          </widget>
          </item>
         </layout>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="filler_image">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-         <property name="placeholderText">
-          <string>Current Filler Image</string>
-         </property>
-        </widget>
        </item>
        <item>
         <widget class="QGroupBox" name="groupBox_4">
@@ -200,6 +203,45 @@
         </layout>
        </item>
        <item>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="filler_image">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>140</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Filler image</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="filler_image_label">
+         <property name="text">
+          <string>Image used for filling</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -252,6 +294,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen_Data"/>
+    <addaction name="actionOpen_Filler_Image"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -259,6 +302,11 @@
   <action name="actionOpen_Data">
    <property name="text">
     <string>Open Data</string>
+   </property>
+  </action>
+  <action name="actionOpen_Filler_Image">
+   <property name="text">
+    <string>Open Filler Image</string>
    </property>
   </action>
  </widget>
