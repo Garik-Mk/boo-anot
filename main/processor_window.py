@@ -18,6 +18,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.base_poses = {}
         self.selected_label = None
         self.images_loaded = False
+        self.filler_image_path = None
 
         self.images_per_frame_update()
         self.set_images_poses()
@@ -33,13 +34,20 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             self.apply_y_offset
         )
         self.actionOpen_Data.triggered.connect(
+            self.open_folder_selection_dialog
+        )
+        self.filler_image.clicked.connect(
             self.open_file_selection_dialog
         )
+
         self.item_list.itemDoubleClicked.connect(self.open_image_sequence)
+        self.boundingbox.setStyleSheet('border: 2px solid blue;')
+        self.get_current_bounding_box()
+        self.boundingbox.show()
 
 
     @QtCore.pyqtSlot()
-    def open_file_selection_dialog(self) -> None:
+    def open_folder_selection_dialog(self) -> None:
         """
         Open a file selection dialog to choose the data folder.
         """
@@ -48,8 +56,31 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             "Open File",
             "${HOME}"
         )
-        self.data_folder = fname
-        self.load_image_in_list()
+        if fname:
+            self.data_folder = fname
+            self.load_image_in_list()
+
+
+    def open_file_selection_dialog(self) -> None:
+        """
+        Open a file selection dialog to choose a single file.
+        """
+        options = QtWidgets.QFileDialog.Options()
+        options |= QtWidgets.QFileDialog.DontUseNativeDialog
+        fname, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Open File",
+            "${HOME}",
+            "All Files (*);;Text Files (*.txt)",  # Adjust file filter as needed
+            options=options
+        )
+        if fname:
+            self.filler_image_path = fname
+
+    def mousePressEvent(self, event):
+        if event.widget() == self.line_edit:
+            print("Line edit clicked")
+        super().mousePressEvent(event)
 
 
     def load_image_in_list(self) -> None:
@@ -118,7 +149,15 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         for label in self.images:
             x_list.append(label.pos().x())
             y_list.append(label.pos().y())
-        
+        upper_left_x = min(x_list)
+        upper_left_y = min(y_list)
+        lower_right_x = max(x_list) + self.images[0].size().width()
+        lower_right_y = max(y_list) + self.images[0].size().height()
+        width = lower_right_x - upper_left_x
+        height = lower_right_y - upper_left_y
+
+        self.boundingbox.setGeometry(QtCore.QRect(upper_left_x, upper_left_y, width, height))
+
 
 
     def resizeEvent(self, event):
@@ -206,12 +245,12 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                 if (new_pos.x() < 0 or new_pos.y() < 0) or\
                 (new_pos.x() > self.imageFrame.size().width() or
                     new_pos.y() > self.imageFrame.size().height()):
-                    return
+                    continue
             else:
                 if (new_pos.x() < 0 or new_pos.y() < 0) or\
                 (new_pos.x() > self.imageFrame.size().width() or
                     new_pos.y() > self.imageFrame.size().height() or
                     label.size().height() + new_pos.y() > self.imageFrame.size().height()):
-                    return
+                    continue
             label.move(new_pos)
-        self.get_current_bounding_box()
+            self.get_current_bounding_box()
