@@ -19,10 +19,8 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.selected_label = None
         self.images_loaded = False
         self.filler_image_path = None
-
-        self.images_per_frame_update()
-        self.set_images_poses()
-
+        self.selected_fill_mode = None
+        
 
         self.images_per_frame_spin_box.valueChanged.connect(
             self.images_per_frame_update
@@ -36,14 +34,20 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.actionOpen_Data.triggered.connect(
             self.open_folder_selection_dialog
         )
-        self.filler_image.clicked.connect(
+        self.actionOpen_Filler_Image.triggered.connect(
             self.open_file_selection_dialog
         )
+        self.fill_mode_box.currentIndexChanged.connect(
+            self.fillmode_select
+        )
 
+        self.images_per_frame_update()
+        self.set_images_poses()
         self.item_list.itemDoubleClicked.connect(self.open_image_sequence)
         self.boundingbox.setStyleSheet('border: 2px solid blue;')
         self.get_current_bounding_box()
         self.boundingbox.show()
+        self.fillmode_select()
 
 
     @QtCore.pyqtSlot()
@@ -65,22 +69,36 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         """
         Open a file selection dialog to choose a single file.
         """
-        options = QtWidgets.QFileDialog.Options()
-        options |= QtWidgets.QFileDialog.DontUseNativeDialog
         fname, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Open File",
             "${HOME}",
-            "All Files (*);;Text Files (*.txt)",  # Adjust file filter as needed
-            options=options
+            "All Files (*);;Text Files (*.txt)"
         )
         if fname:
             self.filler_image_path = fname
+            self.update_filler_image()
 
-    def mousePressEvent(self, event):
-        if event.widget() == self.line_edit:
-            print("Line edit clicked")
-        super().mousePressEvent(event)
+
+    def update_filler_image(self):
+        temp_pixmap = QtGui.QPixmap(self.filler_image_path)
+        if not temp_pixmap.isNull():
+            new_width = self.toolMenu.size().width()
+            temp_pixmap = temp_pixmap.scaledToWidth(int(new_width * 0.3))
+            self.filler_image.setPixmap(temp_pixmap)
+
+
+    def fillmode_select(self, _=None):
+        self.selected_fill_mode = self.fill_mode_box.currentText()
+        if self.selected_fill_mode is None or self.selected_fill_mode == 'Empty':
+            self.filler_image.hide()
+            self.filler_image_label.hide()
+        elif self.selected_fill_mode == 'Fill With Image':
+            self.filler_image.show()
+            self.filler_image_label.show()
+        else:
+            self.filler_image.hide()
+            self.filler_image_label.hide()
 
 
     def load_image_in_list(self) -> None:
@@ -125,7 +143,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             if (image_frame_h - each_image_h) < 0:
                 resized_pixmap = resized_pixmap.scaledToHeight(image_frame_h * downscale)
                 each_image_h = resized_pixmap.size().height()
-            
+
             offset = len(self.images) * resized_pixmap.size().width()
             offset -= self.imageFrame.size().width()
             offset = abs(offset)
