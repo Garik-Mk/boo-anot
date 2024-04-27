@@ -21,6 +21,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.images_loaded = False
         self.filler_image_path = None
         self.selected_fill_mode = None
+        self.filler_pixmap = None
         
         # =================================== SIGNAL HANDLING ===================================
         self.images_per_frame_spin_box.valueChanged.connect(
@@ -75,7 +76,8 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         Finally, it sets the QImage as the pixmap for the bounding 
         box label.
         """
-        if self.filler_image_path is None:
+        self.fillmode_select()
+        if self.filler_pixmap is None:
             return
         filler = self.filler_pixmap.scaledToWidth(self.images[0].size().width())
         width = int(self.boundingbox.width())
@@ -88,6 +90,17 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         del painter
         self.boundingbox.setPixmap(QtGui.QPixmap.fromImage(image))
 
+
+    def generate_empty_filler(self) -> None:
+        if self.images_loaded == False:
+            width = 10
+            height = 30
+        else:
+            width = self.images[0].size().width()
+            height = self.images[0].size().height()
+        self.filler_pixmap = QtGui.QPixmap(width, height)
+        self.filler_pixmap.fill(QtGui.QColor("black"))
+        self.filler_image.setPixmap(self.filler_pixmap)
 
 
     def remove_pixmap(self) -> None:
@@ -186,10 +199,14 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
         """
         self.selected_fill_mode = self.fill_mode_box.currentText()
-        if self.selected_fill_mode is None or self.selected_fill_mode == 'Empty':
+        if self.selected_fill_mode is None:
             self.filler_image.hide()
             self.filler_image_label.hide()
         elif self.selected_fill_mode == 'Fill With Image':
+            self.filler_image.show()
+            self.filler_image_label.show()
+        elif self.selected_fill_mode == 'Empty':
+            self.generate_empty_filler()
             self.filler_image.show()
             self.filler_image_label.show()
         else:
