@@ -1,9 +1,13 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
-from main.processor_qt import Ui_processor
-from natsort import natsorted
+import os
+import cv2
 from functools import partial
+from PyQt5 import QtWidgets, QtCore, QtGui
+from natsort import natsorted
 
-from main.utils import list_files, ImageWrapper
+from main.processor_qt import Ui_processor
+from main.utils import list_files, ImageWrapper, paste_images
+
+PROCESSOR_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
@@ -17,12 +21,17 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.images = []
         self.images_data = {}
         self.base_poses = {}
+        self.items_list = []
         self.selected_label = None
         self.images_loaded = False
         self.filler_image_path = None
         self.selected_fill_mode = None
         self.filler_pixmap = None
-        
+        self.base_sizes = []
+        self.filler_base_size: None
+        self.temp_save_file_path = os.path.join(PROCESSOR_PATH, "temp.bmp")
+
+
         # =================================== SIGNAL HANDLING ===================================
         self.images_per_frame_spin_box.valueChanged.connect(
             self.images_per_frame_update
@@ -48,13 +57,16 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.removeFill.clicked.connect(
             self.remove_pixmap
         )
+        self.processThisFrame.clicked.connect(
+            self.process_image_from_frame
+        )
+        self.item_list.itemDoubleClicked.connect(self.open_image_sequence)
         self.imageFrame.installEventFilter(self)
 
         # =================================== INIT FUNCTIONS ===================================
         self.images_per_frame_update()
         self.set_images_poses()
-        self.item_list.itemDoubleClicked.connect(self.open_image_sequence)
-        self.boundingbox.setStyleSheet('border: 2px solid blue;')
+        self.boundingbox.setStyleSheet('border: 1px solid blue;')
         self.get_current_bounding_box()
         self.boundingbox.show()
         self.fillmode_select()
@@ -63,17 +75,64 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
     # =================================== METHODS ===================================
 
 
+    def process_image_from_frame(self) -> None:
+        if self.boundingbox.pixmap() is None or not self.images_loaded:
+            return
+        coords, bb_x, bb_y = self.calculate_coords()
+
+        copied_pixmap = self.boundingbox.pixmap().copy()
+        copied_pixmap = copied_pixmap.scaledToWidth(bb_x)
+        copied_pixmap.save(self.temp_save_file_path, "BMP")
+
+
+        result_image = paste_images(self.temp_save_file_path, self.items_list, coords)
+        cv2.imwrite(os.path.join(PROCESSOR_PATH, 'result_image.bmp'), result_image)
+        if os.path.exists(self.temp_save_file_path):
+            os.remove(self.temp_save_file_path)
+
+
+    def calculate_coords(self) -> list:
+        coords_x, coords_y = [], []
+        for i, item in enumerate(self.images_data):
+            # Calculate x
+            x_offset = round(
+                (item.pos().x() - self.base_poses[item][0])
+                / (item.size().width()
+                    / self.base_sizes[i][0])
+            )
+            width = self.base_sizes[i][0]
+            pos_x = width * i
+            pos_x += x_offset
+            coords_x.append(pos_x)
+
+            # Calcualte y
+            y_offset = round(
+                (item.pos().y() - self.base_poses[item][1])
+                / (item.size().height()
+                    / self.base_sizes[i][1])
+            )
+            pos_y = 0
+            pos_y += y_offset
+            coords_y.append(pos_y)
+
+        min_y = min(coords_y)
+        coords_y = [num - min_y for num in coords_y]
+        bb_x = max(coords_x) + self.base_sizes[0][0]
+        bb_y = max(coords_y) + self.base_sizes[0][1]
+        return list(zip(coords_x, coords_y)), bb_x, bb_y
+
+
     def fill_label_with_pixmap(self) -> None:
         """
         Fill the bounding box label with a scaled pixmap.
 
-        If the filler_image_path is None, the function returns without 
+        If the filler_pixmap is None, the function returns without
         performing any action.
-        The function scales the filler pixmap to match the width of the 
+        The function scales the filler pixmap to match the width of the
         first image in the images list.
-        Then, it creates a QImage with the dimensions of the bounding box and 
+        Then, it creates a QImage with the dimensions of the bounding box and
         paints the scaled filler pixmap repeatedly across the image.
-        Finally, it sets the QImage as the pixmap for the bounding 
+        Finally, it sets the QImage as the pixmap for the bounding
         box label.
         """
         self.fillmode_select()
@@ -92,9 +151,16 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
 
     def generate_empty_filler(self) -> None:
+        """
+        Generate an empty filler pixmap filled with black color.
+
+        If images are not loaded, creates a filler pixmap with a default width of 10 pixels and height of 30 pixels.
+        If images are loaded, creates a filler pixmap with the same dimensions as the first loaded image.
+        Fills the pixmap with black color and sets it as the pixmap for the filler_image QLabel.
+
+        """
         if self.images_loaded == False:
-            width = 10
-            height = 30
+            return
         else:
             width = self.images[0].size().width()
             height = self.images[0].size().height()
@@ -167,14 +233,15 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         """
         Update the filler image displayed in the filler_image_label.
 
-        Loads the filler image from the filler_image_path and scales 
+        Loads the filler image from the filler_image_path and scales
         it to 30% of the width of the toolMenu.
-        If the loaded pixmap is not null, sets it as the pixmap 
+        If the loaded pixmap is not null, sets it as the pixmap
         for the filler_image_label.
 
         """
         temp_pixmap = QtGui.QPixmap(self.filler_image_path)
         if not temp_pixmap.isNull():
+            self.filler_base_size = (temp_pixmap.size().width(), temp_pixmap.size().height())
             new_width = self.toolMenu.size().width()
             temp_pixmap = temp_pixmap.scaledToWidth(int(new_width * 0.3))
             self.filler_pixmap = temp_pixmap
@@ -186,11 +253,11 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         """
         Select the fill mode and update the visibility of filler_image and filler_image_label accordingly.
 
-        Sets the selected fill mode based on the current 
+        Sets the selected fill mode based on the current
         text of the fill_mode_box.
-        If the selected fill mode is 'Empty', hides the 
+        If the selected fill mode is 'Empty', hides the
         filler_image and filler_image_label.
-        If the selected fill mode is 'Fill With Image', 
+        If the selected fill mode is 'Fill With Image',
         shows the filler_image and filler_image_label.
         Otherwise, hides the filler_image and filler_image_label.
 
@@ -236,15 +303,22 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             item: The item corresponding to the starting image in the sequence.
         """
         start_ind = self.data.index(item.text())
-        items_list = []
+        self.items_list = []
         for i in range(start_ind, start_ind + len(self.images)):
-            items_list.append(self.file_paths[self.data[i]])
-        for i, image_path in enumerate(items_list):
+            self.items_list.append(self.file_paths[self.data[i]])
+        for i, image_path in enumerate(self.items_list):
             temp_pixmap = QtGui.QPixmap(image_path)
             if not temp_pixmap.isNull():
                 self.images[i].setPixmap(temp_pixmap)
+                self.base_sizes.append(
+                    (
+                        temp_pixmap.size().width(),
+                        temp_pixmap.size().height()
+                    )
+                )
         self.images_loaded=True
         self.update_sizes_and_bases()
+        self.fillmode_select()
 
 
 
@@ -252,7 +326,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         """
         Update sizes and positions of images within the imageFrame.
 
-        If images are loaded, calculates and updates the sizes 
+        If images are loaded, calculates and updates the sizes
         and positions of images within the imageFrame
         based on the available space and the number of images.
         """
@@ -346,6 +420,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                 del self.base_poses[label]
                 label.hide()
                 del self.images[-1]
+                del self.images_data[label]
         self.set_images_poses()
         self.update_sizes_and_bases()
         self.remove_pixmap()
@@ -356,7 +431,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         """
         Set the positions of images within the imageFrame.
 
-        Calculates and sets the positions of images within the 
+        Calculates and sets the positions of images within the
         imageFrame based on the percentage
         of the width and height of the imageFrame.
 
@@ -443,3 +518,14 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                     continue
             label.move(new_pos)
             self.get_current_bounding_box()
+
+
+# print(
+#     item,
+#     self.items_list[i],
+#     self.images_data[item],
+#     self.base_sizes[i],
+#     self.base_poses[item],
+#     (item.size().width(), item.size().height()),
+#     (item.pos().x(), item.pos().y())
+# )

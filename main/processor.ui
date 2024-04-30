@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
+    <width>1253</width>
     <height>600</height>
    </rect>
   </property>
@@ -253,21 +253,28 @@
        <item>
         <widget class="QPushButton" name="addFill">
          <property name="text">
-          <string>Add fill</string>
+          <string>Add Fill</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="removeFill">
          <property name="text">
-          <string>Remove fill</string>
+          <string>Remove Fill</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="processThisFrame">
          <property name="text">
-          <string>Frames intersection</string>
+          <string>Process This Frame</string>
          </property>
         </widget>
        </item>
@@ -275,6 +282,13 @@
         <widget class="QPushButton" name="pushButton">
          <property name="text">
           <string>Process Data</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox">
+         <property name="text">
+          <string>Frames intersection</string>
          </property>
         </widget>
        </item>
@@ -288,7 +302,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1000</width>
+     <width>1253</width>
      <height>21</height>
     </rect>
    </property>

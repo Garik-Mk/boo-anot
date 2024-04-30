@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import cv2
 import matplotlib.pyplot as plt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QLabel
@@ -111,7 +112,31 @@ class ImageWrapper():
         self.x = 0
         self.y = 0
         self.depth_level = 0
+        self.original_size = (0, 0)
     
 
     def __repr__(self) -> str:
         return f'x: {self.x}, y: {self.y}, depth: {self.depth_level}'
+
+
+def paste_images(background_image_path, image_paths, coordinates):
+    # Read the background image
+    background_image = cv2.imread(background_image_path)
+
+    # Iterate over each image and its corresponding coordinates
+    for image_path, (x, y) in zip(image_paths, coordinates):
+        # Read the image to paste
+        image_to_paste = cv2.imread(image_path)
+
+        # Get the dimensions of the image to paste
+        height, width, _ = image_to_paste.shape
+
+        # Ensure the image to paste fits within the background image
+        if x < 0 or y < 0 or x + width > background_image.shape[1] or y + height > background_image.shape[0]:
+            print(f"Image at {image_path} does not fit within the background image. Skipping.")
+            continue
+
+        # Paste the image onto the background image
+        background_image[y:y+height, x:x+width] = image_to_paste
+
+    return background_image
