@@ -245,7 +245,6 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
     def open_data_processor(self) -> None:
         """Open data processor window"""
         self.data_processor = ProcessorWindow()
-        self.close()
         self.data_processor.show()
         self.data_processor.data_folder = self.data_folder
         self.data_processor.load_image_in_list()

@@ -29,7 +29,9 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.filler_pixmap = None
         self.base_sizes = []
         self.filler_base_size: None
+        self.save_path = PROCESSOR_PATH
         self.temp_save_file_path = os.path.join(PROCESSOR_PATH, "temp.bmp")
+        self.scale = 1.0
 
 
         # =================================== SIGNAL HANDLING ===================================
@@ -48,6 +50,9 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.actionOpen_Filler_Image.triggered.connect(
             self.open_file_selection_dialog
         )
+        self.actionChange_Save_Path(
+            partial(self.open_folder_selection_dialog, True)
+        )
         self.fill_mode_box.currentIndexChanged.connect(
             self.fillmode_select
         )
@@ -60,6 +65,13 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.processThisFrame.clicked.connect(
             self.process_image_from_frame
         )
+        self.scale_plus.clicked.connect(
+            self.scale_up
+        )
+        self.scale_minus.clicked.connect(
+            self.scale_down
+        )
+            
         self.item_list.itemDoubleClicked.connect(self.open_image_sequence)
         self.imageFrame.installEventFilter(self)
 
@@ -198,18 +210,21 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
 
     @QtCore.pyqtSlot()
-    def open_folder_selection_dialog(self) -> None:
+    def open_folder_selection_dialog(self, save=False) -> None:
         """
         Open a file selection dialog to choose the data folder.
         """
         fname = QtWidgets.QFileDialog.getExistingDirectory(
             self,
-            "Open File",
+            "Open Fodler",
             "${HOME}"
         )
         if fname:
-            self.data_folder = fname
-            self.load_image_in_list()
+            if save:
+                self.save_path = fname
+            else:
+                self.data_folder = fname
+                self.load_image_in_list()
 
 
 
@@ -219,7 +234,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         """
         fname, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
-            "Open File",
+            "Open Filler File",
             "${HOME}",
             "All Files (*);;Text Files (*.txt)"
         )
@@ -295,7 +310,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
 
 
-    def open_image_sequence(self, item):
+    def open_image_sequence(self, item, processing=False):
         """
         Open an image sequence starting from the specified item.
 
@@ -305,17 +320,21 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         start_ind = self.data.index(item.text())
         self.items_list = []
         for i in range(start_ind, start_ind + len(self.images)):
-            self.items_list.append(self.file_paths[self.data[i]])
-        for i, image_path in enumerate(self.items_list):
-            temp_pixmap = QtGui.QPixmap(image_path)
-            if not temp_pixmap.isNull():
-                self.images[i].setPixmap(temp_pixmap)
-                self.base_sizes.append(
-                    (
-                        temp_pixmap.size().width(),
-                        temp_pixmap.size().height()
+            try:
+                self.items_list.append(self.file_paths[self.data[i]])
+            except IndexError:
+                print('There is not enough images')
+        if not processing:
+            for i, image_path in enumerate(self.items_list):
+                temp_pixmap = QtGui.QPixmap(image_path)
+                if not temp_pixmap.isNull():
+                    self.images[i].setPixmap(temp_pixmap)
+                    self.base_sizes.append(
+                        (
+                            temp_pixmap.size().width(),
+                            temp_pixmap.size().height()
+                        )
                     )
-                )
         self.images_loaded=True
         self.update_sizes_and_bases()
         self.fillmode_select()
@@ -332,20 +351,20 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         """
         if not self.images_loaded:
             return
-        image_frame_h = self.imageFrame.size().height()
+        image_frame_h = int(self.imageFrame.size().height() * self.scale)
         for i, label in enumerate(self.images):
             if not label.pixmap():
                 continue
             old_base = self.base_poses[label]
             each_image_w = int(
-                (self.imageFrame.size().width() / len(self.images))
+                (self.imageFrame.size().width() / len(self.images)) * self.scale
             )
             resized_pixmap = label.pixmap().scaledToWidth(int(each_image_w))
-            each_image_h = resized_pixmap.size().height()
+            each_image_h = int(resized_pixmap.size().height()  * self.scale)
 
             if (image_frame_h - each_image_h) < 0:
                 resized_pixmap = resized_pixmap.scaledToHeight(int(image_frame_h))
-                each_image_h = resized_pixmap.size().height()
+                each_image_h = int(resized_pixmap.size().height() * self.scale)
 
             offset = len(self.images) * resized_pixmap.size().width()
             offset -= self.imageFrame.size().width()
@@ -363,6 +382,14 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             label.setPixmap(resized_pixmap)
         self.apply_data()
 
+
+    def scale_up(self):
+        self.scale += 0.01
+        self.update_sizes_and_bases()
+
+    def scale_down(self):
+        self.scale -= 0.01
+        self.update_sizes_and_bases()
 
 
     def get_current_bounding_box(self):
