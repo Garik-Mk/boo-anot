@@ -227,10 +227,13 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
 
     def delete_label(self):
         """Delete the label of the current image."""
-        label_file_path = self.get_label_file_name()
-        if os.path.isfile(label_file_path):
-            os.remove(label_file_path)
-        self.open_image(self.current_image)
+        try:
+            label_file_path = self.get_label_file_name()
+            if os.path.isfile(label_file_path):
+                os.remove(label_file_path)
+            self.open_image(self.current_image)
+        except:
+            pass
 
 
     def reverse_label_data_folder_state(self) -> None:
