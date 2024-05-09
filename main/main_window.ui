@@ -33,6 +33,9 @@
         <property name="lineWidth">
          <number>1</number>
         </property>
+        <property name="autoScrollMargin">
+         <number>1</number>
+        </property>
        </widget>
       </item>
       <item>
@@ -222,7 +225,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Same Data and Label Folder</string>
+    <string>Don't rename files</string>
    </property>
   </action>
   <action name="actionMove_images_to_labels">

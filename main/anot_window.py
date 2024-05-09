@@ -75,7 +75,7 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             for file_name in files:
                 file_path = os.path.join(root, file_name)
                 base_name, extension = os.path.splitext(file_name)
-                new_file_name = f"{base_name}_{integer}{extension}"
+                new_file_name = f"{integer}__{base_name}{extension}"
                 os.rename(file_path, os.path.join(root, new_file_name))
                 print(f"Renamed '{file_name}' to '{new_file_name}'")
         self.load_image_in_list()

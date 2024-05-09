@@ -30,7 +30,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.base_sizes = []
         self.filler_base_size: None
         self.save_path = PROCESSOR_PATH
-        self.temp_save_file_path = os.path.join(PROCESSOR_PATH, "temp.bmp")
+        self.temp_background_save_file_path = os.path.join(PROCESSOR_PATH, "temp.bmp")
         self.scale = 1.0
 
 
@@ -50,7 +50,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.actionOpen_Filler_Image.triggered.connect(
             self.open_file_selection_dialog
         )
-        self.actionChange_Save_Path(
+        self.actionChange_Save_Path.triggered.connect(
             partial(self.open_folder_selection_dialog, True)
         )
         self.fill_mode_box.currentIndexChanged.connect(
@@ -62,8 +62,8 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.removeFill.clicked.connect(
             self.remove_pixmap
         )
-        self.processThisFrame.clicked.connect(
-            self.process_image_from_frame
+        self.processSelectedData.clicked.connect(
+            self.process_selected_data
         )
         self.scale_plus.clicked.connect(
             self.scale_up
@@ -71,8 +71,13 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.scale_minus.clicked.connect(
             self.scale_down
         )
-            
-        self.item_list.itemDoubleClicked.connect(self.open_image_sequence)
+        self.select_all.clicked.connect(
+            self.select_all_items
+        )
+        self.item_list.itemDoubleClicked.connect(
+            self.open_image_sequence
+        )
+
         self.imageFrame.installEventFilter(self)
 
         # =================================== INIT FUNCTIONS ===================================
@@ -87,20 +92,55 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
     # =================================== METHODS ===================================
 
 
-    def process_image_from_frame(self) -> None:
+    def process_single_image_from_frame(self) -> None:
         if self.boundingbox.pixmap() is None or not self.images_loaded:
             return
         coords, bb_x, bb_y = self.calculate_coords()
 
+        self.save_background(bb_x)
+
+        result_image = paste_images(self.temp_background_save_file_path, self.items_list, coords)
+        cv2.imwrite(os.path.join(PROCESSOR_PATH, 'result_image.bmp'), result_image)
+
+        self.remove_saved_background()
+
+
+    def process_selected_data(self) -> None:
+        coords, bb_x, bb_y = self.calculate_coords()
+        self.save_background(bb_x)
+        for i, item in enumerate(self.item_list.selectedItems()):
+            current_index = self.item_list.row(item)
+            next_items = []
+            for j in range(current_index + 1, min(
+                                        current_index + (1 + self.images_per_frame_spin_box.value()),
+                                        self.item_list.count()
+                                        )):
+                index = self.data.index(self.item_list.item(j).text())
+                next_items.append(
+                    self.file_paths[self.data[index]]
+                )
+            result_image = paste_images(self.temp_background_save_file_path, next_items, coords)
+            cv2.imwrite(os.path.join(self.save_path, self.generate_image_name(next_items)), result_image)
+        self.remove_saved_background()
+    
+
+    def generate_image_name(self, data) -> str:
+        result_name = ''
+        result_name += os.path.split(data[0])[1].split('.')[0]
+        result_name += f'__l{len(data)}'
+        return result_name + '.bmp'
+
+
+
+    def save_background(self, bb_x) -> None:
         copied_pixmap = self.boundingbox.pixmap().copy()
         copied_pixmap = copied_pixmap.scaledToWidth(bb_x)
-        copied_pixmap.save(self.temp_save_file_path, "BMP")
+        copied_pixmap.save(self.temp_background_save_file_path, "BMP")
 
 
-        result_image = paste_images(self.temp_save_file_path, self.items_list, coords)
-        cv2.imwrite(os.path.join(PROCESSOR_PATH, 'result_image.bmp'), result_image)
-        if os.path.exists(self.temp_save_file_path):
-            os.remove(self.temp_save_file_path)
+    def remove_saved_background(self) -> None:
+        if os.path.exists(self.temp_background_save_file_path):
+            os.remove(self.temp_background_save_file_path)
 
 
     def calculate_coords(self) -> list:
@@ -545,6 +585,9 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                     continue
             label.move(new_pos)
             self.get_current_bounding_box()
+
+    def select_all_items(self):
+        self.item_list.selectAll()
 
 
 # print(
