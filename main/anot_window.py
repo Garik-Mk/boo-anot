@@ -9,7 +9,7 @@ from PyQt5.QtGui import QPixmap, QIcon
 
 from main.boo_anot_qt import Ui_ImageViewer
 from main.processor_window import ProcessorWindow
-from main.utils import list_files, open_npy_image, replace_extension_with_txt
+from main.utils import list_files, open_npy_image, replace_extension_with_txt, BASE_CLASS_MAPPING
 
 MAIN_BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -48,6 +48,9 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         )
         self.actionOpen_Data_Processor.triggered.connect(
             self.open_data_processor
+        )
+        self.actionAdd_Label_To_Filename.triggered.connect(
+            self.add_labels_to_filenames
         )
 
         self.item_list.itemDoubleClicked.connect(self.open_image)
@@ -110,6 +113,60 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.item_list.addItems(natsorted(self.file_paths.keys()))
 
 
+    def get_label(self, item: QtWidgets.QListWidgetItem=None):
+        """
+        Retrieve the label associated with a given item.
+
+        Args:
+            item: The item for which to retrieve the label.
+
+        Returns str:
+            The label corresponding to the provided item, or None if the label file does not exist.
+        """
+        label_file = self.get_label_file_name(item)
+        if os.path.exists(label_file):
+            with open(label_file, 'r') as fd:
+                return fd.read()
+        return None
+
+
+    def add_labels_to_filenames(self):
+        """
+        Add labels to filenames based on a predefined mapping and rename the files accordingly.
+        """
+        for item in self.iter_over_item_list():
+            label = self.get_label(item)
+            if label in BASE_CLASS_MAPPING:
+                label_name = BASE_CLASS_MAPPING[label]
+            else:
+                print('Error found in data: ', label)
+                continue
+            base_name = item.text()
+            label_file_name = replace_extension_with_txt(base_name)
+            new_filename = f'{label_name}__{base_name}'
+            new_label_file_name = f'{label_name}__{label_file_name}'
+            os.rename(
+                os.path.join(self.data_folder, base_name),
+                os.path.join(self.data_folder, new_filename)
+            )
+            os.rename(
+                os.path.join(self.label_folder, label_file_name),
+                os.path.join(self.label_folder, new_label_file_name)
+            )
+        self.load_image_in_list()
+
+
+    def iter_over_item_list(self):
+        """
+        Iterate over the item list.
+
+        Yields:
+            Each item in the item list.
+        """
+        for i in range(self.item_list.count()):
+            yield self.item_list.item(i)
+
+
     def open_image(self, item):
         """
         Open the selected image and display it in the image label.
@@ -130,10 +187,8 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             )
             self.image_label.setPixmap(self.pixmap)
             self.current_image = item
-            label_file = self.get_label_file_name()
-            if os.path.exists(label_file):
-                with open(label_file, 'r') as fd:
-                    label = fd.read()
+            label = self.get_label()
+            if label is not None:
                 self.current_label.setText(f'Current label - #{label}')
             else:
                 self.current_label.setText('None')
@@ -216,11 +271,13 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
             print(f"Error occurred while creating text file: {e}")
 
 
-    def get_label_file_name(self) -> str:
+    def get_label_file_name(self, item=None) -> str:
         """Generate label file name from base_directory_name + image_name + .txt"""
+        if item is None:
+            item = self.current_image
         label_file = os.path.join(
             self.label_folder,
-            replace_extension_with_txt(self.current_image.text())
+            replace_extension_with_txt(item.text())
         )
         return label_file
 

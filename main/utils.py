@@ -7,6 +7,14 @@ from PyQt5.QtWidgets import QLabel
 
 UTILS_BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
+BASE_CLASS_MAPPING = {
+    '0': 'Clear',
+    '1': 'Human',
+    '2': 'Car',
+    '3': 'LineNoise',
+    '4': 'Noise'
+}
+
 
 def list_files(directory: str, same_folder: bool=False, remove_extensions=False, npy=False) -> dict:
     """

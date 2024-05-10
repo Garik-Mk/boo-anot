@@ -191,6 +191,7 @@
     <addaction name="actionMove_images_to_labels"/>
     <addaction name="actionAdd_number_to_each_filename_end"/>
     <addaction name="actionOpen_Data_Processor"/>
+    <addaction name="actionAdd_Label_To_Filename"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
@@ -230,12 +231,12 @@
   </action>
   <action name="actionMove_images_to_labels">
    <property name="text">
-    <string>Move images to labels</string>
+    <string>Move Images To Labels</string>
    </property>
   </action>
   <action name="actionAdd_number_to_each_filename_end">
    <property name="text">
-    <string>Add number to each filename end</string>
+    <string>Add Number To Each Filename</string>
    </property>
   </action>
   <action name="actionOpen_NPY_files">
@@ -249,6 +250,11 @@
   <action name="actionOpen_Data_Processor">
    <property name="text">
     <string>Open Data Processor</string>
+   </property>
+  </action>
+  <action name="actionAdd_Label_To_Filename">
+   <property name="text">
+    <string>Add Label To Filename</string>
    </property>
   </action>
  </widget>

@@ -366,6 +366,7 @@
     <addaction name="actionOpen_Filler_Image"/>
     <addaction name="separator"/>
     <addaction name="actionChange_Save_Path"/>
+    <addaction name="actionSame_Label_And_Data_folder"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -395,6 +396,14 @@
   <action name="actionAuto_process">
    <property name="text">
     <string>Auto process</string>
+   </property>
+  </action>
+  <action name="actionSame_Label_And_Data_folder">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Same Label And Data folder</string>
    </property>
   </action>
  </widget>

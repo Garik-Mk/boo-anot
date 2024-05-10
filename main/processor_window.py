@@ -21,7 +21,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.images = []
         self.images_data = {}
         self.base_poses = {}
-        self.items_list = []
+        self.objects_list = []
         self.selected_label = None
         self.images_loaded = False
         self.filler_image_path = None
@@ -32,18 +32,10 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.save_path = PROCESSOR_PATH
         self.temp_background_save_file_path = os.path.join(PROCESSOR_PATH, "temp.bmp")
         self.scale = 1.0
-
+        self.same_folder = False
 
         # =================================== SIGNAL HANDLING ===================================
-        self.images_per_frame_spin_box.valueChanged.connect(
-            self.images_per_frame_update
-        )
-        self.currentX.valueChanged.connect(
-            self.apply_x_offset
-        )
-        self.currentY.valueChanged.connect(
-            self.apply_y_offset
-        )
+
         self.actionOpen_Data.triggered.connect(
             self.open_folder_selection_dialog
         )
@@ -52,6 +44,19 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         )
         self.actionChange_Save_Path.triggered.connect(
             partial(self.open_folder_selection_dialog, True)
+        )
+        self.actionSame_Label_And_Data_folder.triggered.connect(
+            self.reverse_label_data_folder_state
+        )
+
+        self.images_per_frame_spin_box.valueChanged.connect(
+            self.images_per_frame_update
+        )
+        self.currentX.valueChanged.connect(
+            self.apply_x_offset
+        )
+        self.currentY.valueChanged.connect(
+            self.apply_y_offset
         )
         self.fill_mode_box.currentIndexChanged.connect(
             self.fillmode_select
@@ -99,10 +104,15 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
         self.save_background(bb_x)
 
-        result_image = paste_images(self.temp_background_save_file_path, self.items_list, coords)
+        result_image = paste_images(self.temp_background_save_file_path, self.objects_list, coords)
         cv2.imwrite(os.path.join(PROCESSOR_PATH, 'result_image.bmp'), result_image)
 
         self.remove_saved_background()
+
+
+    def reverse_label_data_folder_state(self) -> None:
+        """Reverses state of using same folder for images and labels"""
+        self.same_folder = not self.same_folder
 
 
     def process_selected_data(self) -> None:
@@ -344,7 +354,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         if self.data_folder is None:
             return
         self.item_list.clear()
-        self.file_paths = list_files(self.data_folder)
+        self.file_paths = list_files(self.data_folder, self.same_folder)
         self.data = natsorted(self.file_paths.keys())
         self.item_list.addItems(self.data)
 
@@ -358,14 +368,14 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             item: The item corresponding to the starting image in the sequence.
         """
         start_ind = self.data.index(item.text())
-        self.items_list = []
+        self.objects_list = []
         for i in range(start_ind, start_ind + len(self.images)):
             try:
-                self.items_list.append(self.file_paths[self.data[i]])
+                self.objects_list.append(self.file_paths[self.data[i]])
             except IndexError:
                 print('There is not enough images')
         if not processing:
-            for i, image_path in enumerate(self.items_list):
+            for i, image_path in enumerate(self.objects_list):
                 temp_pixmap = QtGui.QPixmap(image_path)
                 if not temp_pixmap.isNull():
                     self.images[i].setPixmap(temp_pixmap)
