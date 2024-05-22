@@ -188,10 +188,10 @@
     <property name="title">
      <string>Data</string>
     </property>
-    <addaction name="actionMove_images_to_labels"/>
     <addaction name="actionAdd_number_to_each_filename_end"/>
-    <addaction name="actionOpen_Data_Processor"/>
     <addaction name="actionAdd_Label_To_Filename"/>
+    <addaction name="actionMove_images_to_labels"/>
+    <addaction name="actionOpen_Data_Processor"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
@@ -255,6 +255,11 @@
   <action name="actionAdd_Label_To_Filename">
    <property name="text">
     <string>Add Label To Filename</string>
+   </property>
+  </action>
+  <action name="actionProcess_Dataset">
+   <property name="text">
+    <string>Process Dataset</string>
    </property>
   </action>
  </widget>

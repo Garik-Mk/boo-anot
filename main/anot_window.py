@@ -92,10 +92,14 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         Args:
             data: If True, selects the data folder; otherwise, selects the labels folder.
         """
+        if self.data_folder:
+            default = self.data_folder
+        else:
+            default = '${HOME}'
         fname = QtWidgets.QFileDialog.getExistingDirectory(
             self,
             "Open File",
-            "${HOME}"
+            default
         )
         if data:
             self.data_folder = fname

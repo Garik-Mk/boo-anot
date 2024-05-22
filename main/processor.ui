@@ -7,14 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>1253</width>
-    <height>600</height>
+    <height>643</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,1,0">
+   <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,1,0,0">
     <item>
      <widget class="QGroupBox" name="groupBox_3">
       <property name="title">
@@ -67,7 +67,7 @@
       <property name="title">
        <string>Preview</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
+      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0">
        <item>
         <widget class="QWidget" name="imageFrame" native="true">
          <property name="cursor">
@@ -86,6 +86,22 @@
            <string/>
           </property>
          </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="horizontalSlider">
+         <property name="minimum">
+          <number>-500</number>
+         </property>
+         <property name="maximum">
+          <number>500</number>
+         </property>
+         <property name="value">
+          <number>0</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
         </widget>
        </item>
        <item>
@@ -143,6 +159,25 @@
      </widget>
     </item>
     <item>
+     <widget class="QSlider" name="verticalSlider">
+      <property name="minimum">
+       <number>-500</number>
+      </property>
+      <property name="maximum">
+       <number>500</number>
+      </property>
+      <property name="singleStep">
+       <number>1</number>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QGroupBox" name="toolMenu">
       <property name="title">
        <string>Tools</string>
@@ -191,6 +226,22 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="currentY">
+            <property name="decimals">
+             <number>4</number>
+            </property>
+            <property name="minimum">
+             <double>-1.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.001000000000000</double>
+            </property>
+           </widget>
+          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_3">
             <property name="text">
@@ -214,19 +265,26 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="currentY">
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="offset_coef_spin_box">
             <property name="decimals">
              <number>4</number>
             </property>
-            <property name="minimum">
-             <double>-1.000000000000000</double>
-            </property>
             <property name="maximum">
-             <double>1.000000000000000</double>
+             <double>9999.000000000000000</double>
             </property>
             <property name="singleStep">
-             <double>0.001000000000000</double>
+             <double>0.050000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.010000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Offset Coef.</string>
             </property>
            </widget>
           </item>
@@ -344,6 +402,16 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QCheckBox" name="autoApplyOffsetsCheckbox">
+         <property name="text">
+          <string>Auto apply offsets</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
@@ -355,7 +423,7 @@
      <x>0</x>
      <y>0</y>
      <width>1253</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

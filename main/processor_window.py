@@ -33,6 +33,8 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.temp_background_save_file_path = os.path.join(PROCESSOR_PATH, "temp.bmp")
         self.scale = 1.0
         self.same_folder = False
+        self.move_vertical_size = 0
+        self.move_horizontal_size = 0
 
         # =================================== SIGNAL HANDLING ===================================
 
@@ -82,6 +84,12 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.item_list.itemDoubleClicked.connect(
             self.open_image_sequence
         )
+        self.verticalSlider.valueChanged.connect(
+            self.move_vertical
+        )
+        self.horizontalSlider.valueChanged.connect(
+            self.move_horizontal
+        )
 
         self.imageFrame.installEventFilter(self)
 
@@ -95,6 +103,16 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
 
     # =================================== METHODS ===================================
+
+
+    def move_vertical(self, value):
+        self.move_vertical_size = value
+        self.apply_data() 
+
+
+    def move_horizontal(self, value):
+        self.move_horizontal_size = value 
+        self.apply_data()
 
 
     def process_single_image_from_frame(self) -> None:
@@ -116,6 +134,9 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
 
     def process_selected_data(self) -> None:
+        if self.autoApplyOffsetsCheckbox.isChecked():
+            self.auto_apply_offsets()
+            return
         coords, bb_x, bb_y = self.calculate_coords()
         self.save_background(bb_x)
         for i, item in enumerate(self.item_list.selectedItems()):
@@ -132,7 +153,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             result_image = paste_images(self.temp_background_save_file_path, next_items, coords)
             cv2.imwrite(os.path.join(self.save_path, self.generate_image_name(next_items)), result_image)
         self.remove_saved_background()
-    
+
 
     def generate_image_name(self, data) -> str:
         result_name = ''
@@ -182,6 +203,46 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         bb_x = max(coords_x) + self.base_sizes[0][0]
         bb_y = max(coords_y) + self.base_sizes[0][1]
         return list(zip(coords_x, coords_y)), bb_x, bb_y
+
+
+    def auto_apply_offsets(self) -> None:
+        for i, item in enumerate(self.item_list.selectedItems()):
+            offsets_vector = []
+            current_index = self.item_list.row(item)
+            for j in range(current_index, min(
+                                        current_index + self.images_per_frame_spin_box.value(),
+                                        self.item_list.count()
+                                        )):
+                offsets_vector.append(self.extract_distance(self.item_list.item(j).text()))
+            # print('normalized: ', normalize_vector(offsets_vector))
+            # print('normalized with coef: ', normalize_vector(offsets_vector) * self.offset_coef_spin_box.value())
+            print('base (km): ', offsets_vector)
+            min_distance = min(offsets_vector)
+            for i, elem in enumerate(offsets_vector):
+                offsets_vector[i] = elem - min_distance
+            # offsets_vector = normalize_vector(offsets_vector)
+            for i, elem in enumerate(offsets_vector):
+                offsets_vector[i] = elem * self.offset_coef_spin_box.value()
+            print(offsets_vector)
+            for index, _object in enumerate(self.images_data):
+                try:
+                    self.images_data[_object].y = -offsets_vector[index]
+                except IndexError:
+                    print('Not enough images to process')
+                    self.images_data[_object].y = 0
+            # self.images_data[self.selected_label].y = self.currentY.value()
+            self.apply_data()
+
+
+
+    def extract_distance(self, file_name: str) -> float:
+        """
+        Providen filename with format: label_datasetID_trackID_tick_d{distance}.bmp
+
+        Extracts distance from filename
+        """
+        base_name, _ = os.path.splitext(file_name)
+        return float(base_name.split('n')[-1].split('m')[0].replace('_', ''))
 
 
     def fill_label_with_pixmap(self) -> None:
@@ -582,18 +643,11 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                 int(self.images_data[label].x * self.imageFrame.width() + current_pos[0]),
                 int(self.images_data[label].y * self.imageFrame.height() + current_pos[1])
             )
-            if not self.images_loaded:
-                if (new_pos.x() < 0 or new_pos.y() < 0) or\
-                (new_pos.x() > self.imageFrame.size().width() or
-                    new_pos.y() > self.imageFrame.size().height()):
-                    continue
-            else:
-                if (new_pos.x() < 0 or new_pos.y() < 0) or\
-                (new_pos.x() > self.imageFrame.size().width() or
-                    new_pos.y() > self.imageFrame.size().height() or
-                    label.size().height() + new_pos.y() > self.imageFrame.size().height()):
-                    continue
-            label.move(new_pos)
+            new_pos_adjusted = QtCore.QPoint(
+                new_pos.x() + self.move_horizontal_size,
+                new_pos.y() + self.move_vertical_size
+            )
+            label.move(new_pos_adjusted)
             self.get_current_bounding_box()
 
     def select_all_items(self):
