@@ -134,24 +134,34 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
 
     def process_selected_data(self) -> None:
-        if self.autoApplyOffsetsCheckbox.isChecked():
-            self.auto_apply_offsets()
-            return
-        coords, bb_x, bb_y = self.calculate_coords()
-        self.save_background(bb_x)
+        if not self.autoApplyOffsetsCheckbox.isChecked():
+            coords, bb_x, bb_y = self.calculate_coords()
+            self.save_background(bb_x)
         for i, item in enumerate(self.item_list.selectedItems()):
             current_index = self.item_list.row(item)
             next_items = []
-            for j in range(current_index + 1, min(
-                                        current_index + (1 + self.images_per_frame_spin_box.value()),
+            file_list = []
+            for j in range(current_index, min(
+                                        current_index + (self.images_per_frame_spin_box.value()),
                                         self.item_list.count()
                                         )):
                 index = self.data.index(self.item_list.item(j).text())
                 next_items.append(
                     self.file_paths[self.data[index]]
                 )
-            result_image = paste_images(self.temp_background_save_file_path, next_items, coords)
-            cv2.imwrite(os.path.join(self.save_path, self.generate_image_name(next_items)), result_image)
+                file_list.append(self.data[index])
+            if self.autoApplyOffsetsCheckbox.isChecked():
+                ret = self.auto_apply_offsets(file_list)
+                if ret < 0:
+                    return
+                self.fill_label_with_pixmap()
+                coords, bb_x, bb_y = self.calculate_coords()
+                self.save_background(bb_x)
+            if self.savedata.isChecked():
+                result_image = paste_images(self.temp_background_save_file_path, next_items, coords)
+                cv2.imwrite(os.path.join(self.save_path, self.generate_image_name(next_items)), result_image)
+            if self.autoApplyOffsetsCheckbox.isChecked():
+                self.remove_saved_background()
         self.remove_saved_background()
 
 
@@ -205,22 +215,33 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         return list(zip(coords_x, coords_y)), bb_x, bb_y
 
 
-    def auto_apply_offsets(self) -> None:
-        for i, item in enumerate(self.item_list.selectedItems()):
+    def auto_apply_offsets(self, sequence: list) -> None:
+        print(sequence)
+        for i, item in enumerate(sequence):
             offsets_vector = []
-            current_index = self.item_list.row(item)
-            for j in range(current_index, min(
-                                        current_index + self.images_per_frame_spin_box.value(),
-                                        self.item_list.count()
-                                        )):
-                offsets_vector.append(self.extract_distance(self.item_list.item(j).text()))
-            # print('normalized: ', normalize_vector(offsets_vector))
-            # print('normalized with coef: ', normalize_vector(offsets_vector) * self.offset_coef_spin_box.value())
-            print('base (km): ', offsets_vector)
+            base_trackID = None
+            last_tick = None
+            for file_name in sequence:
+                new_trackID, distance, tick = self.extract_data_from_name(file_name)
+                if base_trackID is None:
+                    base_trackID = new_trackID
+                elif new_trackID != base_trackID:
+                    print(f'Not enough instances of {base_trackID} object')
+                    self.statusBar().showMessage(f'Not enough instances of {base_trackID} object', 5000)
+                    return -1
+                if last_tick is None:
+                    last_tick = tick
+                elif abs(tick - last_tick) > 5:
+                    print(f'Difference between neighbour ticks: {abs(tick - last_tick)}')
+                    self.statusBar().showMessage(f'Difference between neighbour ticks: {abs(tick - last_tick)}', 5000)
+                    return -2
+                else:
+                    last_tick = tick
+                offsets_vector.append(distance)
+            print('base: ', offsets_vector)
             min_distance = min(offsets_vector)
             for i, elem in enumerate(offsets_vector):
                 offsets_vector[i] = elem - min_distance
-            # offsets_vector = normalize_vector(offsets_vector)
             for i, elem in enumerate(offsets_vector):
                 offsets_vector[i] = elem * self.offset_coef_spin_box.value()
             print(offsets_vector)
@@ -228,21 +249,29 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                 try:
                     self.images_data[_object].y = -offsets_vector[index]
                 except IndexError:
+                    self.statusBar().showMessage('Not enough images to process', 5000)
                     print('Not enough images to process')
                     self.images_data[_object].y = 0
-            # self.images_data[self.selected_label].y = self.currentY.value()
             self.apply_data()
+        return 0
 
 
 
-    def extract_distance(self, file_name: str) -> float:
+    def extract_data_from_name(self, file_name: str) -> float:
         """
         Providen filename with format: label_datasetID_trackID_tick_d{distance}.bmp
 
-        Extracts distance from filename
+        Extracts distance, trackID and tick from filename 
+
+        Returns trackID: str
+                distance: float
+                tick: int
         """
         base_name, _ = os.path.splitext(file_name)
-        return float(base_name.split('n')[-1].split('m')[0].replace('_', ''))
+        trackID = base_name.split('__')[2]
+        distance = float(base_name.split('n')[-1].split('m')[0].replace('_', ''))
+        tick = int(base_name.split('__')[3].split('_')[0])
+        return trackID, distance, tick
 
 
     def fill_label_with_pixmap(self) -> None:
@@ -336,7 +365,6 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             else:
                 self.data_folder = fname
                 self.load_image_in_list()
-
 
 
     def open_file_selection_dialog(self) -> None:
@@ -434,6 +462,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             try:
                 self.objects_list.append(self.file_paths[self.data[i]])
             except IndexError:
+                self.statusBar().showMessage('Not enough images to process', 5000)
                 print('There is not enough images')
         if not processing:
             for i, image_path in enumerate(self.objects_list):

@@ -23,7 +23,6 @@ def check_for_updates():
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     check_for_updates()
-    apply_stylesheet(app, theme='./color_theme.xml')
     boo_anot_window = BooWindow()
     boo_anot_window.show()
     app.exec()

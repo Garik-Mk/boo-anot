@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1253</width>
-    <height>643</height>
+    <height>878</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
       <property name="title">
        <string>Dataset</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0,0,0">
        <item>
         <widget class="QListWidget" name="item_list">
          <property name="selectionMode">
@@ -58,6 +58,9 @@
           </spacer>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textEdit"/>
        </item>
       </layout>
      </widget>
@@ -206,7 +209,7 @@
            </item>
            <item>
             <property name="text">
-             <string>Fill Random</string>
+             <string>Auto</string>
             </property>
            </item>
           </widget>
@@ -409,6 +412,13 @@
          </property>
          <property name="checked">
           <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="savedata">
+         <property name="text">
+          <string>Save Data</string>
          </property>
         </widget>
        </item>
