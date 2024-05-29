@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from natsort import natsorted
 
 from main.processor_qt import Ui_processor
-from main.utils import list_files, ImageWrapper, paste_images
+from main.utils import list_files, ImageWrapper, paste_images, shuffle_pixmap
 
 PROCESSOR_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -35,6 +35,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.same_folder = False
         self.move_vertical_size = 0
         self.move_horizontal_size = 0
+        self.filler_crop_size = 0.15
 
         # =================================== SIGNAL HANDLING ===================================
 
@@ -107,11 +108,11 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
     def move_vertical(self, value):
         self.move_vertical_size = value
-        self.apply_data() 
+        self.apply_data()
 
 
     def move_horizontal(self, value):
-        self.move_horizontal_size = value 
+        self.move_horizontal_size = value
         self.apply_data()
 
 
@@ -261,7 +262,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         """
         Providen filename with format: label_datasetID_trackID_tick_d{distance}.bmp
 
-        Extracts distance, trackID and tick from filename 
+        Extracts distance, trackID and tick from filename
 
         Returns trackID: str
                 distance: float
@@ -272,6 +273,45 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         distance = float(base_name.split('n')[-1].split('m')[0].replace('_', ''))
         tick = int(base_name.split('__')[3].split('_')[0])
         return trackID, distance, tick
+
+
+    def autofill(self) -> None:
+        """
+        Generate auto filling pixmap, croping top and bottom partes of opened images
+
+        For each image, top part of size self.filler_crop_size is cropped,
+        and applied to background to fill the top part and make secure, that
+        there is no empty space. Same is done with the bottom part.
+        """
+        real_width_bg, real_height_bg = int(self.boundingbox.width()), int(self.boundingbox.height())
+        real_width_pixmap, real_height_pixmap = self.base_sizes[0]
+        scaled_width_pixmap, scaled_height_pixmap = self.images[0].size().width(), self.images[0].size().height()
+        scale_factor = scaled_width_pixmap / real_width_pixmap
+        scaled_width_bg, scaled_height_bg = round(real_width_bg / scale_factor), round(real_height_bg / scale_factor)
+        image = QtGui.QImage(scaled_width_bg, scaled_height_bg, QtGui.QImage.Format.Format_ARGB32)
+        painter = QtGui.QPainter(image)
+        center_line_y = scaled_height_bg // 2
+        crop_pixels_count = round(real_height_pixmap * self.filler_crop_size)
+        for index, each_pixmap in enumerate(self.images):
+            croped_pixmap_top = each_pixmap.pixmap().copy(
+                QtCore.QRect(0, 0, scaled_width_pixmap, round(crop_pixels_count * scale_factor))
+            )
+            croped_pixmap_bottom = each_pixmap.pixmap().copy(
+                QtCore.QRect(0, scaled_height_pixmap - round(crop_pixels_count * scale_factor), scaled_width_pixmap, scaled_height_pixmap)
+            )
+            croped_pixmap_top_downscaled = croped_pixmap_top.scaledToWidth(real_width_pixmap)
+            croped_pixmap_bottom_downscaled = croped_pixmap_bottom.scaledToWidth(real_width_pixmap)
+            start_point_x = index * real_width_pixmap
+            for y in range(center_line_y, 0 - crop_pixels_count, -crop_pixels_count):
+                croped_pixmap_top_shuffled = shuffle_pixmap(croped_pixmap_top_downscaled)
+                painter.drawPixmap(start_point_x, y, croped_pixmap_top_shuffled)
+            for y in range(center_line_y, scaled_height_bg, crop_pixels_count):
+                croped_pixmap_bottom_shuffled = shuffle_pixmap(croped_pixmap_bottom_downscaled)
+                painter.drawPixmap(start_point_x, y, croped_pixmap_bottom_shuffled)
+        del painter
+        bg_pixmap = QtGui.QPixmap.fromImage(image)
+        bg_pixmap = bg_pixmap.scaledToWidth(real_width_bg)
+        self.boundingbox.setPixmap(bg_pixmap)
 
 
     def fill_label_with_pixmap(self) -> None:
@@ -288,6 +328,9 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         box label.
         """
         self.fillmode_select()
+        if self.selected_fill_mode == 'Auto':
+            self.autofill()
+            return
         if self.filler_pixmap is None:
             return
         filler = self.filler_pixmap.scaledToWidth(self.images[0].size().width())
@@ -645,6 +688,8 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
     def apply_x_offset(self) -> None:
         """Apply x axis offset to selected image in the frame"""
+        if self.selected_label is None:
+            return
         self.images_data[self.selected_label].x = self.currentX.value()
         self.apply_data()
 
@@ -652,6 +697,8 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
     def apply_y_offset(self) -> None:
         """Apply x axis offset to selected image in the frame"""
+        if self.selected_label is None:
+            return
         self.images_data[self.selected_label].y = self.currentY.value()
         self.apply_data()
 

@@ -2,7 +2,7 @@ import os
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QImage, QPainter
 from PyQt5.QtWidgets import QLabel
 
 UTILS_BASE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -148,3 +148,24 @@ def paste_images(background_image_path, image_paths, coordinates):
         background_image[y:y+height, x:x+width] = image_to_paste
 
     return background_image
+
+
+def shuffle_pixmap(input_pixmap: QPixmap) -> QPixmap:
+    width = int(input_pixmap.size().width())
+    height = int(input_pixmap.size().height())
+    image = QImage(width, height, QImage.Format.Format_ARGB32)
+    painter = QPainter(image)
+    new_x_list, new_y_list = np.arange(width), np.arange(height)
+    np.random.shuffle(new_x_list)
+    np.random.shuffle(new_y_list)
+    input_image = input_pixmap.toImage()
+    for old_x in range(width):
+        for old_y in range(height):
+            new_x = new_x_list[old_x]
+            new_y = new_y_list[old_y]
+            color = input_image.pixelColor(old_x, old_y)
+            painter.setPen(color)
+            painter.drawPoint(new_x, new_y)
+    painter.end()
+    shuffled_pixmap = QPixmap.fromImage(image)
+    return shuffled_pixmap
