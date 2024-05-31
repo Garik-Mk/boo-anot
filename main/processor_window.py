@@ -35,7 +35,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.same_folder = False
         self.move_vertical_size = 0
         self.move_horizontal_size = 0
-        self.filler_crop_size = 0.15
+        self.filler_crop_size = 0.3
 
         # =================================== SIGNAL HANDLING ===================================
 

@@ -9,6 +9,7 @@ MarkupSafe==2.1.5
 matplotlib==3.8.4
 natsort==8.4.0
 numpy==1.26.4
+opencv-python==4.9.0.80
 packaging==24.0
 pefile==2023.2.7
 pillow==10.3.0
