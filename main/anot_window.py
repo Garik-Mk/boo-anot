@@ -52,6 +52,9 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.actionAdd_Label_To_Filename.triggered.connect(
             self.add_labels_to_filenames
         )
+        self.actionRefresh.triggered.connect(
+            self.refresh
+        )
 
         self.item_list.itemDoubleClicked.connect(self.open_image)
         self.search.textChanged.connect(self.search_and_scroll)
@@ -63,6 +66,17 @@ class BooWindow(QtWidgets.QMainWindow, Ui_ImageViewer):
         self.menuBar.setNativeMenuBar(False)
 
         self.setFocusPolicy(Qt.StrongFocus)
+
+
+    def refresh(self):
+        """
+        Reload loaded files.
+        """
+        if self.data_folder is None:
+            return
+        self.load_image_in_list()
+
+
 
 
     def add_integer_to_filenames(self):

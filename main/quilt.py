@@ -33,7 +33,7 @@ def find_best_block(sample, block_size, overlap, block_top, block_left):
             
     return best_block
 
-def synthesize_texture(sample, output_shape, block_size, overlap):
+def synthesize_texture(sample, output_shape, block_size, overlap, existing_sample=None):
     h_out, w_out, _ = output_shape
     result = np.zeros(output_shape, dtype=sample.dtype)
     

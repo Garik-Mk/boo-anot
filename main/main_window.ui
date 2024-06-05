@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
+    <width>1079</width>
     <height>600</height>
    </rect>
   </property>
@@ -171,8 +171,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1000</width>
-     <height>21</height>
+     <width>1079</width>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -192,6 +192,7 @@
     <addaction name="actionAdd_Label_To_Filename"/>
     <addaction name="actionMove_images_to_labels"/>
     <addaction name="actionOpen_Data_Processor"/>
+    <addaction name="actionRefresh"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
@@ -260,6 +261,14 @@
   <action name="actionProcess_Dataset">
    <property name="text">
     <string>Process Dataset</string>
+   </property>
+  </action>
+  <action name="actionRefresh">
+   <property name="text">
+    <string>Refresh</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
  </widget>

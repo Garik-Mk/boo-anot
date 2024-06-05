@@ -209,7 +209,12 @@
            </item>
            <item>
             <property name="text">
-             <string>Auto</string>
+             <string>Auto (Quilt)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Auto (Shuffle)</string>
             </property>
            </item>
           </widget>

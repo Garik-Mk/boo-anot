@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_ImageViewer(object):
     def setupUi(self, ImageViewer):
         ImageViewer.setObjectName("ImageViewer")
-        ImageViewer.resize(1000, 600)
+        ImageViewer.resize(1079, 600)
         font = QtGui.QFont()
         font.setFamily("Consolas")
         font.setPointSize(10)
@@ -94,7 +94,7 @@ class Ui_ImageViewer(object):
         self.horizontalLayout_2.setStretch(2, 1)
         ImageViewer.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(ImageViewer)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1000, 21))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1079, 26))
         self.menuBar.setObjectName("menuBar")
         self.menuFile = QtWidgets.QMenu(self.menuBar)
         self.menuFile.setObjectName("menuFile")
@@ -127,6 +127,8 @@ class Ui_ImageViewer(object):
         self.actionAdd_Label_To_Filename.setObjectName("actionAdd_Label_To_Filename")
         self.actionProcess_Dataset = QtWidgets.QAction(ImageViewer)
         self.actionProcess_Dataset.setObjectName("actionProcess_Dataset")
+        self.actionRefresh = QtWidgets.QAction(ImageViewer)
+        self.actionRefresh.setObjectName("actionRefresh")
         self.menuFile.addAction(self.actionOpen_Data_Folder)
         self.menuFile.addAction(self.actionOpen_Label_Folder)
         self.menuFile.addAction(self.actionSame_Data_and_Label_Folder)
@@ -135,6 +137,7 @@ class Ui_ImageViewer(object):
         self.menuData.addAction(self.actionAdd_Label_To_Filename)
         self.menuData.addAction(self.actionMove_images_to_labels)
         self.menuData.addAction(self.actionOpen_Data_Processor)
+        self.menuData.addAction(self.actionRefresh)
         self.menuBar.addAction(self.menuFile.menuAction())
         self.menuBar.addAction(self.menuData.menuAction())
 
@@ -165,3 +168,5 @@ class Ui_ImageViewer(object):
         self.actionOpen_Data_Processor.setText(_translate("ImageViewer", "Open Data Processor"))
         self.actionAdd_Label_To_Filename.setText(_translate("ImageViewer", "Add Label To Filename"))
         self.actionProcess_Dataset.setText(_translate("ImageViewer", "Process Dataset"))
+        self.actionRefresh.setText(_translate("ImageViewer", "Refresh"))
+        self.actionRefresh.setShortcut(_translate("ImageViewer", "Ctrl+R"))

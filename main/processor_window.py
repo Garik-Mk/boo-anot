@@ -6,6 +6,7 @@ from natsort import natsorted
 
 from main.processor_qt import Ui_processor
 from main.utils import list_files, ImageWrapper, paste_images, shuffle_pixmap
+from main.quilt import synthesize_texture
 
 PROCESSOR_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -275,7 +276,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         return trackID, distance, tick
 
 
-    def autofill(self) -> None:
+    def autofillShuffle(self, quilt=False) -> None:
         """
         Generate auto filling pixmap, croping top and bottom partes of opened images
 
@@ -302,12 +303,15 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             croped_pixmap_top_downscaled = croped_pixmap_top.scaledToWidth(real_width_pixmap)
             croped_pixmap_bottom_downscaled = croped_pixmap_bottom.scaledToWidth(real_width_pixmap)
             start_point_x = index * real_width_pixmap
+            if quilt:
+                ...
+            else:
+                processed_top = shuffle_pixmap(croped_pixmap_top_downscaled)
+                processed_bottom = shuffle_pixmap(croped_pixmap_bottom_downscaled)
             for y in range(center_line_y, 0 - crop_pixels_count, -crop_pixels_count):
-                croped_pixmap_top_shuffled = shuffle_pixmap(croped_pixmap_top_downscaled)
-                painter.drawPixmap(start_point_x, y, croped_pixmap_top_shuffled)
+                painter.drawPixmap(start_point_x, y, processed_top)
             for y in range(center_line_y, scaled_height_bg, crop_pixels_count):
-                croped_pixmap_bottom_shuffled = shuffle_pixmap(croped_pixmap_bottom_downscaled)
-                painter.drawPixmap(start_point_x, y, croped_pixmap_bottom_shuffled)
+                painter.drawPixmap(start_point_x, y, processed_bottom)
         del painter
         bg_pixmap = QtGui.QPixmap.fromImage(image)
         bg_pixmap = bg_pixmap.scaledToWidth(real_width_bg)
@@ -328,8 +332,11 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         box label.
         """
         self.fillmode_select()
-        if self.selected_fill_mode == 'Auto':
-            self.autofill()
+        if self.selected_fill_mode == 'Auto (Shuffle)':
+            self.autofillShuffle(quilt=False)
+            return
+        if self.selected_fill_mode == 'Auto (Quilt)':
+            self.autofillShuffle(quilt=True)
             return
         if self.filler_pixmap is None:
             return
