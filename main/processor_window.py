@@ -218,41 +218,42 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
 
 
     def auto_apply_offsets(self, sequence: list) -> None:
-        print(sequence)
+        self.output.append(f'{str(sequence)}\n')
         for i, item in enumerate(sequence):
             offsets_vector = []
             base_trackID = None
             last_tick = None
             for file_name in sequence:
+                self.output.append(f'Processing {file_name}\n')
                 new_trackID, distance, tick = self.extract_data_from_name(file_name)
                 if base_trackID is None:
                     base_trackID = new_trackID
                 elif new_trackID != base_trackID:
-                    print(f'Not enough instances of {base_trackID} object')
+                    self.output.append(f'Not enough instances of {base_trackID} object\n')
                     self.statusBar().showMessage(f'Not enough instances of {base_trackID} object', 5000)
                     return -1
                 if last_tick is None:
                     last_tick = tick
                 elif abs(tick - last_tick) > 5:
-                    print(f'Difference between neighbour ticks: {abs(tick - last_tick)}')
+                    self.output.append(f'Difference between neighbour ticks: {abs(tick - last_tick)}\n')
                     self.statusBar().showMessage(f'Difference between neighbour ticks: {abs(tick - last_tick)}', 5000)
                     return -2
                 else:
                     last_tick = tick
                 offsets_vector.append(distance)
-            print('base: ', offsets_vector)
+            self.output.append(f'base: {offsets_vector}\n')
             min_distance = min(offsets_vector)
             for i, elem in enumerate(offsets_vector):
                 offsets_vector[i] = elem - min_distance
             for i, elem in enumerate(offsets_vector):
                 offsets_vector[i] = elem * self.offset_coef_spin_box.value()
-            print(offsets_vector)
+            self.output.append(f'offsets: {offsets_vector}\n')
             for index, _object in enumerate(self.images_data):
                 try:
                     self.images_data[_object].y = -offsets_vector[index]
                 except IndexError:
                     self.statusBar().showMessage('Not enough images to process', 5000)
-                    print('Not enough images to process')
+                    self.output.append(f'\nNot enough images to process\n')
                     self.images_data[_object].y = 0
             self.apply_data()
         return 0
@@ -513,7 +514,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                 self.objects_list.append(self.file_paths[self.data[i]])
             except IndexError:
                 self.statusBar().showMessage('Not enough images to process', 5000)
-                print('There is not enough images')
+                self.output.append('There is not enough images\n')
         if not processing:
             for i, image_path in enumerate(self.objects_list):
                 temp_pixmap = QtGui.QPixmap(image_path)

@@ -20,7 +20,14 @@
       <property name="title">
        <string>Dataset</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,0,0,0">
+       <item>
+        <widget class="QCheckBox" name="processVideoData">
+         <property name="text">
+          <string>Process Video Data</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QListWidget" name="item_list">
          <property name="selectionMode">
@@ -60,7 +67,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QTextEdit" name="textEdit"/>
+        <widget class="QTextEdit" name="output"/>
        </item>
       </layout>
      </widget>
@@ -300,20 +307,6 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <item>
-          <widget class="QLabel" name="label_5">
-           <property name="text">
-            <string>Depth level</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="spinBox_2"/>
-         </item>
-        </layout>
-       </item>
-       <item>
         <widget class="Line" name="line">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -401,16 +394,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox">
-         <property name="text">
-          <string>Frames intersection</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QCheckBox" name="autoApplyOffsetsCheckbox">
          <property name="text">
           <string>Auto apply offsets</string>
@@ -451,14 +434,7 @@
     <addaction name="actionChange_Save_Path"/>
     <addaction name="actionSame_Label_And_Data_folder"/>
    </widget>
-   <widget class="QMenu" name="menuEdit">
-    <property name="title">
-     <string>Edit</string>
-    </property>
-    <addaction name="actionAuto_process"/>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuEdit"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen_Data">
