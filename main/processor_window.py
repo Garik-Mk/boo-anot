@@ -290,30 +290,31 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         scaled_width_pixmap, scaled_height_pixmap = self.images[0].size().width(), self.images[0].size().height()
         scale_factor = scaled_width_pixmap / real_width_pixmap
         scaled_width_bg, scaled_height_bg = round(real_width_bg / scale_factor), round(real_height_bg / scale_factor)
-        image = QtGui.QImage(scaled_width_bg, scaled_height_bg, QtGui.QImage.Format.Format_ARGB32)
-        painter = QtGui.QPainter(image)
-        center_line_y = scaled_height_bg // 2
-        crop_pixels_count = round(real_height_pixmap * self.filler_crop_size)
-        for index, each_pixmap in enumerate(self.images):
-            croped_pixmap_top = each_pixmap.pixmap().copy(
-                QtCore.QRect(0, 0, scaled_width_pixmap, round(crop_pixels_count * scale_factor))
-            )
-            croped_pixmap_bottom = each_pixmap.pixmap().copy(
-                QtCore.QRect(0, scaled_height_pixmap - round(crop_pixels_count * scale_factor), scaled_width_pixmap, scaled_height_pixmap)
-            )
-            croped_pixmap_top_downscaled = croped_pixmap_top.scaledToWidth(real_width_pixmap)
-            croped_pixmap_bottom_downscaled = croped_pixmap_bottom.scaledToWidth(real_width_pixmap)
-            start_point_x = index * real_width_pixmap
-            if quilt:
-                ...
-            else:
+        if quilt:
+            self.temp_background_save_file_path # TODO ERIK
+            ...
+        else:
+            image = QtGui.QImage(scaled_width_bg, scaled_height_bg, QtGui.QImage.Format.Format_ARGB32)
+            painter = QtGui.QPainter(image)
+            center_line_y = scaled_height_bg // 2
+            crop_pixels_count = round(real_height_pixmap * self.filler_crop_size)
+            for index, each_pixmap in enumerate(self.images):
+                croped_pixmap_top = each_pixmap.pixmap().copy(
+                    QtCore.QRect(0, 0, scaled_width_pixmap, round(crop_pixels_count * scale_factor))
+                )
+                croped_pixmap_bottom = each_pixmap.pixmap().copy(
+                    QtCore.QRect(0, scaled_height_pixmap - round(crop_pixels_count * scale_factor), scaled_width_pixmap, scaled_height_pixmap)
+                )
+                croped_pixmap_top_downscaled = croped_pixmap_top.scaledToWidth(real_width_pixmap)
+                croped_pixmap_bottom_downscaled = croped_pixmap_bottom.scaledToWidth(real_width_pixmap)
+                start_point_x = index * real_width_pixmap
                 processed_top = shuffle_pixmap(croped_pixmap_top_downscaled)
                 processed_bottom = shuffle_pixmap(croped_pixmap_bottom_downscaled)
-            for y in range(center_line_y, 0 - crop_pixels_count, -crop_pixels_count):
-                painter.drawPixmap(start_point_x, y, processed_top)
-            for y in range(center_line_y, scaled_height_bg, crop_pixels_count):
-                painter.drawPixmap(start_point_x, y, processed_bottom)
-        del painter
+                for y in range(center_line_y, 0 - crop_pixels_count, -crop_pixels_count):
+                    painter.drawPixmap(start_point_x, y, processed_top)
+                for y in range(center_line_y, scaled_height_bg, crop_pixels_count):
+                    painter.drawPixmap(start_point_x, y, processed_bottom)
+            del painter
         bg_pixmap = QtGui.QPixmap.fromImage(image)
         bg_pixmap = bg_pixmap.scaledToWidth(real_width_bg)
         self.boundingbox.setPixmap(bg_pixmap)
