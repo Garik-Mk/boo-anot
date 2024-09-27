@@ -16,7 +16,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         super(ProcessorWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
 
-        # =================================== MEMBORS ===================================
+        # =================================== MEMBERS ===================================
         self.data_folder = None
         self.data: list
         self.images = []
@@ -341,8 +341,15 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             self.autofillShuffle(quilt=True)
             return
         if self.filler_pixmap is None:
-            return
-        filler = self.filler_pixmap.scaledToWidth(self.images[0].size().width())
+            return        
+        if self.selected_fill_mode == 'Extracted Noise':
+            filler_width = self.filler_pixmap.size().width()
+            image_real_width = self.base_sizes[0][0]
+            image_scaled_width = self.images[0].size().width()
+            real_scale = (image_scaled_width / image_real_width) * filler_width
+            filler = self.filler_pixmap.scaledToWidth(int(real_scale))
+        else:
+            filler = self.filler_pixmap.scaledToWidth(self.images[0].size().width())
         width = int(self.boundingbox.width())
         height = int(self.boundingbox.height())
         image = QtGui.QImage(width, height, QtGui.QImage.Format.Format_ARGB32)
@@ -475,7 +482,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         if self.selected_fill_mode is None:
             self.filler_image.hide()
             self.filler_image_label.hide()
-        elif self.selected_fill_mode == 'Fill With Image':
+        elif self.selected_fill_mode == 'Fill With Image' or self.selected_fill_mode == 'Extracted Noise':
             self.filler_image.show()
             self.filler_image_label.show()
         elif self.selected_fill_mode == 'Empty':

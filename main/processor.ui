@@ -234,6 +234,11 @@
            </item>
            <item>
             <property name="text">
+             <string>Extracted Noise</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
              <string>Auto (Quilt)</string>
             </property>
            </item>
