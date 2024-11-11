@@ -44,7 +44,7 @@ def synthesize_texture(sample, output_shape, block_size, overlap, existing_sampl
         for j in range(num_blocks_horiz):
             y = i * (block_size - overlap)
             x = j * (block_size - overlap)
-            block_top = result[y - (block_size - overlap):y, x:x+block_size] if i > 0 else None
+            block_top = result[y - (block_size - overlap):y, x : x+block_size] if i > 0 else None
             block_left = result[y:y+block_size, x - (block_size - overlap):x] if j > 0 else None
             
             best_block = find_best_block(sample, block_size, overlap, block_top, block_left)
@@ -54,10 +54,10 @@ def synthesize_texture(sample, output_shape, block_size, overlap, existing_sampl
 
 
 if __name__ == "__main__":
-    sample_image = cv2.imread(r"C:\Users\garik\projects\dataset\dataset\negative\18.bmp")
-    output_shape = (512, 512, 3)
-    block_size = 10
-    overlap = 3
+    sample_image = cv2.imread(r"C:\Users\Uzer\Desktop\360_F_397287904_5B9j7LBLVccN2maTr4V4vYl9JZ51UI5Q.jpg")
+    output_shape = (1500, 1500, 3)
+    block_size = 300
+    overlap = 50
     
     result = synthesize_texture(sample_image, output_shape, block_size, overlap)
     cv2.imwrite('synthesized_texture.jpg', result)
