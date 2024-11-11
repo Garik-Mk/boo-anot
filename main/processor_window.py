@@ -1,12 +1,14 @@
 import os
 import cv2
+import numpy as np
 from functools import partial
 from PyQt5 import QtWidgets, QtCore, QtGui
 from natsort import natsorted
 
 from main.processor_qt import Ui_processor
-from main.utils import list_files, ImageWrapper, paste_images, shuffle_pixmap
+from main.utils import list_files, ImageWrapper, paste_images, paste_images_seperately, shuffle_pixmap
 from main.quilt import synthesize_texture
+from tqdm import tqdm
 
 PROCESSOR_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -37,6 +39,13 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.move_vertical_size = 0
         self.move_horizontal_size = 0
         self.filler_crop_size = 0.3
+        self.hided_label = None
+        self.index_to_show = 0
+        self.is_bg_filled = False
+        self.video_seq_len = None
+        self.selected_parent = None
+        self.data_to_delete = []
+        # self.frames, self.frames_copy = self.group_seq_frames(self.data)
 
         # =================================== SIGNAL HANDLING ===================================
 
@@ -93,6 +102,25 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             self.move_horizontal
         )
 
+        # self.processVideoData.stateChanged.connect(
+        #     self.process_videodata
+        # )
+
+        self.nextButton.clicked.connect(
+            self.add_index
+        )
+
+        self.prevButton.clicked.connect(
+            self.subtract_index
+        )
+        self.treeWidget.itemDoubleClicked.connect(
+            self.open_image_sequence
+        )
+        
+        self.SaveAllVideoData.clicked.connect(
+            self.save_video_data_helper
+        )
+
         self.imageFrame.installEventFilter(self)
 
         # =================================== INIT FUNCTIONS ===================================
@@ -139,19 +167,31 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         if not self.autoApplyOffsetsCheckbox.isChecked():
             coords, bb_x, bb_y = self.calculate_coords()
             self.save_background(bb_x)
+        
         for i, item in enumerate(self.item_list.selectedItems()):
-            current_index = self.item_list.row(item)
+            current_index = self.item_list.row(item) if not self.SaveVideoData.isChecked() else self.selected_parent
             next_items = []
             file_list = []
-            for j in range(current_index, min(
-                                        current_index + (self.images_per_frame_spin_box.value()),
-                                        self.item_list.count()
-                                        )):
-                index = self.data.index(self.item_list.item(j).text())
-                next_items.append(
-                    self.file_paths[self.data[index]]
-                )
-                file_list.append(self.data[index])
+            if not self.processVideoData.isChecked():
+                for j in range(current_index, min(
+                                            current_index + (self.images_per_frame_spin_box.value()),
+                                            self.item_list.count()
+                                            )):
+                    index = self.data.index(self.item_list.item(j).text())
+                    next_items.append(
+                        self.file_paths[self.data[index]]
+                    )
+                    file_list.append(self.data[index])
+            
+            elif self.processVideoData.isChecked() and self.selected_parent:
+                next_items = []
+                file_list = []
+                for j in range(self.selected_parent.childCount()):
+                    index = self.data.index(self.selected_parent.child(j).text(0))
+                    next_items.append(
+                        self.file_paths[self.data[index]]
+                    )
+                    file_list.append(self.data[index])
             if self.autoApplyOffsetsCheckbox.isChecked():
                 ret = self.auto_apply_offsets(file_list)
                 if ret < 0:
@@ -164,7 +204,14 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                 cv2.imwrite(os.path.join(self.save_path, self.generate_image_name(next_items)), result_image)
             if self.autoApplyOffsetsCheckbox.isChecked():
                 self.remove_saved_background()
+        
         self.remove_saved_background()
+        if self.processVideoData.isChecked():
+            self.frames, self.frames_copy = self.group_seq_frames(self.data)
+            self.frames = self.normalize_vid_lenght(self.frames)
+            self.hide_item_list()
+            self.process_videodata()
+            self.output.append(f'Not enough instances of {self.boundingbox.pixmap().size() * (self.base_sizes[0][0] / self.images[0].size().width())} object\n')
 
 
     def generate_image_name(self, data) -> str:
@@ -179,7 +226,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         copied_pixmap = self.boundingbox.pixmap().copy()
         copied_pixmap = copied_pixmap.scaledToWidth(bb_x)
         copied_pixmap.save(self.temp_background_save_file_path, "BMP")
-
+        
 
     def remove_saved_background(self) -> None:
         if os.path.exists(self.temp_background_save_file_path):
@@ -206,6 +253,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                 / (item.size().height()
                     / self.base_sizes[i][1])
             )
+            # print((item.pos().y() - self.base_poses[item][1]))
             pos_y = 0
             pos_y += y_offset
             coords_y.append(pos_y)
@@ -225,7 +273,9 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             last_tick = None
             for file_name in sequence:
                 self.output.append(f'Processing {file_name}\n')
+                # self.output.append(f'Processing  {self.selected_parent.text(0)}\n')
                 new_trackID, distance, tick = self.extract_data_from_name(file_name)
+                # print(f'new_trackID: {new_trackID}, distance: {distance}, tick: {tick}')
                 if base_trackID is None:
                     base_trackID = new_trackID
                 elif new_trackID != base_trackID:
@@ -234,6 +284,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                     return -1
                 if last_tick is None:
                     last_tick = tick
+                    # print(f"last tick has updated to {last_tick}")
                 elif abs(tick - last_tick) > 5:
                     self.output.append(f'Difference between neighbour ticks: {abs(tick - last_tick)}\n')
                     self.statusBar().showMessage(f'Difference between neighbour ticks: {abs(tick - last_tick)}', 5000)
@@ -243,10 +294,17 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                 offsets_vector.append(distance)
             self.output.append(f'base: {offsets_vector}\n')
             min_distance = min(offsets_vector)
+            max_distance = max(offsets_vector)
             for i, elem in enumerate(offsets_vector):
                 offsets_vector[i] = elem - min_distance
-            for i, elem in enumerate(offsets_vector):
-                offsets_vector[i] = elem * self.offset_coef_spin_box.value()
+
+            for i, elem in enumerate(offsets_vector):                
+                offsets_vector[i] = elem * self.offset_coef_spin_box.value() if elem * self.offset_coef_spin_box.value() < 1 else 1
+
+
+            # for i, elem in enumerate(offsets_vector):
+            #     if offsets_vector[i] > 1:
+            #         offsets_vector[i] = 1
             self.output.append(f'offsets: {offsets_vector}\n')
             for index, _object in enumerate(self.images_data):
                 try:
@@ -288,11 +346,28 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         real_width_bg, real_height_bg = int(self.boundingbox.width()), int(self.boundingbox.height())
         real_width_pixmap, real_height_pixmap = self.base_sizes[0]
         scaled_width_pixmap, scaled_height_pixmap = self.images[0].size().width(), self.images[0].size().height()
-        scale_factor = scaled_width_pixmap / real_width_pixmap
+        scale_factor = real_width_pixmap / scaled_width_pixmap
         scaled_width_bg, scaled_height_bg = round(real_width_bg / scale_factor), round(real_height_bg / scale_factor)
         if quilt:
-            self.temp_background_save_file_path # TODO ERIK
-            ...
+            # sample_image = cv2.imread(r"C:\Users\Uzer\Desktop\negative\negative\06-06-2022 negative\6.bmp")
+            sample_image = cv2.imread(self.objects_list[0])
+            texture = sample_image[:, :8]
+            # sample_bottom = sample_image[-3:, :]
+            # texture = cv2.vconcat([sample_top, sample_bottom])
+            # print(texture.shape)
+            cv2.imwrite('texture.jpeg', texture)
+            output_shape = (real_height_bg, real_width_bg, 3)
+            block_size = 3
+            overlap = 1
+            synth_bg = synthesize_texture(texture, output_shape, block_size, overlap)
+            cv2.imwrite(self.temp_background_save_file_path, synth_bg)
+            # self.temp_background_save_file_path = 'Synthezied_BG.jpeg'
+            image = QtGui.QImage(self.temp_background_save_file_path)
+            texture = QtGui.QImage('texture.jpeg')
+            self.filler_pixmap = QtGui.QPixmap(6, 20)
+            self.filler_pixmap.convertFromImage(texture)
+            self.filler_image.setPixmap(self.filler_pixmap)
+            
         else:
             image = QtGui.QImage(scaled_width_bg, scaled_height_bg, QtGui.QImage.Format.Format_ARGB32)
             painter = QtGui.QPainter(image)
@@ -316,9 +391,169 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
                     painter.drawPixmap(start_point_x, y, processed_bottom)
             del painter
         bg_pixmap = QtGui.QPixmap.fromImage(image)
-        bg_pixmap = bg_pixmap.scaledToWidth(real_width_bg)
+        bg_pixmap = bg_pixmap.scaledToWidth(scaled_width_bg)
+        bg_pixmap = bg_pixmap.scaledToHeight(scaled_height_bg)
         self.boundingbox.setPixmap(bg_pixmap)
+    
+    def process_videodata(self):
+        # self.remove_pixmap()
+        self.update_sizes_and_bases()
+        self.fill_label_with_pixmap()
+        if self.processVideoData.isChecked():
+            self.SaveVideoData.setEnabled(True)
+            self.prevButton.setEnabled(True)
+            self.nextButton.setEnabled(True)
+            self.make_data_tree()
+            # if not self.is_bg_filled:
+            #     self.process_selected_data()
+            if self.SaveVideoData.isChecked():
+                self.save_video_data(self.selected_parent)
+                
+            for ind ,label in enumerate(self.images):
+                if ind != self.index_to_show:
+                    label.hide()
+                else:
+                    label.show()
+        else:
+            self.SaveVideoData.setEnabled(False)
+            for label in self.images:
+                label.show()
+    
+    def save_video_data(self, parent_item):  
+        child_count = parent_item.childCount()  
+        image_paths = []
+        coords, bb_x, _ = self.calculate_coords()
+        self.save_background(bb_x)
+        for i in range(child_count):
+            child_item = parent_item.child(i)
+            image_paths.append(self.file_paths[child_item.text(0)])
+            # print(f"    Child: {self.file_paths[child_item.text(0)]}")
+        # cv2.imwrite('havayi_ardyunq.jpeg',paste_images_seperately(self.temp_background_save_file_path, image_paths, coords)) 
+        paste_images_seperately(self.temp_background_save_file_path, image_paths, coords, self.selected_parent)  
+         
+    def save_video_data_helper(self):
+        root = self.treeWidget.invisibleRootItem()  
+        child_count = root.childCount()
+        self.SaveVideoData.setCheckState(QtCore.Qt.Checked)
 
+        for i in tqdm(range(child_count)):
+            self.selected_parent = root.child(i)
+            self.open_image_sequence(self.selected_parent)
+            self.process_selected_data()
+
+    def subtract_index(self):
+        if self.index_to_show > 0:
+            self.index_to_show -= 1
+            # self.process_videodata()  
+            for ind ,label in enumerate(self.images):
+                if ind != self.index_to_show:
+                    label.hide()
+                else:
+                    label.show()
+    def add_index(self):
+        if self.index_to_show < len(self.objects_list):
+            self.index_to_show += 1
+            # self.process_videodata()
+            for ind ,label in enumerate(self.images):
+                if ind != self.index_to_show:
+                    label.hide()
+                else:
+                    label.show()
+
+
+    def group_seq_frames(self, files):
+        """Grouping Sequential Frames To Make Video"""
+
+        frames = {}
+        frames_copy = {}
+
+        for file in files:
+            info = file.split('__')
+            my_tup = (info[1], info[2], info[3])
+            # print(info[1], info[2], info[3])
+            # print(f'file name is {file}   splited list is {file.split('__')} and    my tuple is {my_tup}')
+
+            if frames.get(my_tup): 
+                frames[my_tup].append(file)     #PROCESSOR_PATH + '\\' + 
+                frames_copy[my_tup].append(file)        #PROCESSOR_PATH + '\\' + 
+            else:
+                frames[my_tup] = [file]     #PROCESSOR_PATH + '\\' + 
+                frames_copy[my_tup] = [file]        #PROCESSOR_PATH + '\\' + 
+
+        
+        return frames, frames_copy
+
+    
+    def cut_video(self, video, norm_size = 8, min_size = 8 ):
+        main_num = len(video) // norm_size
+        extra = int((len(video) % norm_size) >= min_size)
+        num_of_cuts = main_num + extra
+        cuted_videos = [[]]
+        counter = 0
+        for i in range(num_of_cuts) if not extra else range(num_of_cuts - 1):
+            while counter % norm_size != 0 or counter == 0:
+                cuted_videos[0].append(video[counter])
+                counter += 1
+            # counter = min(len(video) - 1, counter)
+            if counter == len(video):
+                break
+            cuted_videos.insert(0, [video[counter]])
+            counter += 1
+        # cuted_videos.pop(0)
+        if extra:
+            cuted_videos[0] = video[-(len(video) % norm_size):]
+        elif not extra and len(video) % norm_size != 0:
+            cuted_videos.pop(0)
+        # print(f"cuted videos:   {cuted_videos}")
+        return cuted_videos
+
+    def normalize_vid_lenght(self,  frames):
+        for key, value in frames.items():
+            if len(value) < 8:
+                del self.frames_copy[key]
+            # elif len(value) > 6 and len(value) < 15:
+            #     pass
+            else:
+                cuted_videos = self.cut_video(frames[key])
+                del self.frames_copy[key]
+                for i in range(len(cuted_videos)):
+                    self.frames_copy[key + (str(i),)] = cuted_videos[i]
+        # frames = self.frames_copy
+        return self.frames_copy
+    
+    def hide_item_list(self):
+        self.item_list.hide()
+
+    def make_data_tree(self):
+        for key, value in self.frames.items():
+            tree_element = QtWidgets.QTreeWidgetItem([str(key)])
+            self.treeWidget.addTopLevelItem(tree_element)
+            self.extracts_items_from_list(tree_element, value)
+        self.treeWidget.setEnabled(True)
+    
+    def extracts_items_from_list(self, parent, branch_childs: list):
+        for elem in branch_childs:
+            child = QtWidgets.QTreeWidgetItem([str(elem)])
+            parent.addChild(child)
+
+
+    def len_of_video_frame(self, item):
+        # print(self.video_seq_len)
+        # print(f'len of frames works in line 479 {item}')
+        if type(item) == QtWidgets.QTreeWidgetItem and not item.parent():
+            self.video_seq_len = item.childCount()
+        elif type(item) == QtWidgets.QTreeWidgetItem and item.parent():
+            self.video_seq_len = item.parent().childCount()
+        # print(self.video_seq_len)
+
+    # def fill_images_with_tree_childs(self, item):
+    #     l = item.childCount()
+    #     self.images.clear()
+    #     start_ind = self.data.index(item.child(0).text(0))
+    #     for i in range(start_ind, start_ind + l):
+    #         self.
+            
+        
 
     def fill_label_with_pixmap(self) -> None:
         """
@@ -339,6 +574,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             return
         if self.selected_fill_mode == 'Auto (Quilt)':
             self.autofillShuffle(quilt=True)
+            self.is_bg_filled = True
             return
         if self.filler_pixmap is None:
             return        
@@ -375,6 +611,7 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         else:
             width = self.images[0].size().width()
             height = self.images[0].size().height()
+        # print(f'height is {height} widhth is {width}')
         self.filler_pixmap = QtGui.QPixmap(width, height)
         self.filler_pixmap.fill(QtGui.QColor("black"))
         self.filler_image.setPixmap(self.filler_pixmap)
@@ -489,6 +726,9 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
             self.generate_empty_filler()
             self.filler_image.show()
             self.filler_image_label.show()
+        elif self.selected_fill_mode == 'Auto (Quilt)':
+            self.filler_image.show()
+            self.filler_image_label.show()
         else:
             self.filler_image.hide()
             self.filler_image_label.hide()
@@ -515,18 +755,44 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         Args:
             item: The item corresponding to the starting image in the sequence.
         """
-        start_ind = self.data.index(item.text())
+        if self.processVideoData.isChecked() and type(item) == QtWidgets.QTreeWidgetItem and not item.parent():
+            start_ind = self.data.index(item.child(0).text(0))    
+        
+        elif self.processVideoData.isChecked() and type(item) == QtWidgets.QTreeWidgetItem and item.parent():
+            start_ind = self.data.index(item.parent().child(0).text(0))
+            # print(f' What you need !!!{item.parent().child(0).text(0)}')    
+
+        
+        else:
+            # print('Error handled !!!!')
+            start_ind = self.data.index(item.text())
+            
+        # start_ind = self.data.index(item.text()) if not self.processVideoData.isChecked() else self.data.index(item.child(0).text(0))
+        # print('I am in process images')
+        if self.processVideoData.isChecked() and type(item) == QtWidgets.QTreeWidgetItem:
+            if item.parent():
+                self.selected_parent = item.parent()
+            else:
+                self.selected_parent  = item 
+            self.len_of_video_frame(item)
+            # print('Opening Image Sequance')
+            self.update_sizes_and_bases() 
+            self.images_per_frame_update()
+
+        sequence_len = self.video_seq_len if self.processVideoData.isChecked()  and type(item) == QtWidgets.QTreeWidgetItem else len(self.images)
         self.objects_list = []
-        for i in range(start_ind, start_ind + len(self.images)):
+        for i in range(start_ind, start_ind + sequence_len):
             try:
                 self.objects_list.append(self.file_paths[self.data[i]])
             except IndexError:
                 self.statusBar().showMessage('Not enough images to process', 5000)
                 self.output.append('There is not enough images\n')
         if not processing:
+            # print(f'lenght of self.images is {len(self.images)}', end=' ')
             for i, image_path in enumerate(self.objects_list):
                 temp_pixmap = QtGui.QPixmap(image_path)
                 if not temp_pixmap.isNull():
+                    # print(f'object is {self.objects_list[i]}')
                     self.images[i].setPixmap(temp_pixmap)
                     self.base_sizes.append(
                         (
@@ -537,7 +803,10 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         self.images_loaded=True
         self.update_sizes_and_bases()
         self.fillmode_select()
-
+        # self.process_selected_data()
+        self.update_sizes_and_bases()
+        # if self.processVideoData.isChecked():
+        #     self.process_videodata()
 
 
     def update_sizes_and_bases(self):
@@ -626,8 +895,8 @@ class ProcessorWindow(QtWidgets.QMainWindow, Ui_processor):
         """
         Create empty labels for new pixmaps to be loaded
         """
-        new_count = self.images_per_frame_spin_box.value()
-        count_current = len(self.images)
+        new_count = self.images_per_frame_spin_box.value() if not self.processVideoData.isChecked() else self.video_seq_len
+        count_current = len(self.images) 
         if count_current == new_count:
             return
         if count_current < new_count:

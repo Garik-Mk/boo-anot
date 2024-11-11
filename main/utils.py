@@ -129,7 +129,9 @@ class ImageWrapper():
 
 def paste_images(background_image_path, image_paths, coordinates):
     # Read the background image
+    # print('Hi am pasteing images')
     background_image = cv2.imread(background_image_path)
+    # print(background_image.shape)
 
     # Iterate over each image and its corresponding coordinates
     for image_path, (x, y) in zip(image_paths, coordinates):
@@ -148,6 +150,45 @@ def paste_images(background_image_path, image_paths, coordinates):
         background_image[y:y+height, x:x+width] = image_to_paste
 
     return background_image
+
+def paste_images_seperately(background_image_path, image_paths, coordinates, parent_item):
+    # Read the background image
+    # print('Hi am pasteing images seperayely')
+    i = 0
+    folder_path = 'C:\\Users\\Uzer\\Desktop\\Dataset' + '\\' + parent_item.text(0)
+
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        # print(f"Folder '{folder_path}' created.")
+    else:
+        print(f"Folder '{folder_path}' already exists.")
+
+    # Iterate over each image and its corresponding coordinates
+    for image_path, (x, y) in zip(image_paths, coordinates):
+        # Read the image to paste
+        # print("I am in loop")
+        background_image = cv2.imread(background_image_path)
+        image_to_paste = cv2.imread(image_path)
+        # print((x,y))
+
+        # Get the dimensions of the image to paste
+        height, width, _ = image_to_paste.shape
+
+        # Ensure the image to paste fits within the background image
+        if x < 0 or y < 0 or x + width > background_image.shape[1] or y + height > background_image.shape[0]:
+            print(f"Image at {image_path} does not fit within the background image. Skipping.")
+            continue
+
+        # Paste the image onto the background image
+        background_image[y:y+height, x:x+width] = image_to_paste
+        background_image = cv2.resize(background_image, (112, 112))
+        # print("pasteing works")
+        # cv2.imshow('image.jpeg',background_image)
+        res_name = str(i) + '.bmp'
+        cv2.imwrite(folder_path + '\\' + res_name, background_image)
+        i += 1
+
+    # return background_image
 
 
 def shuffle_pixmap(input_pixmap: QPixmap) -> QPixmap:
