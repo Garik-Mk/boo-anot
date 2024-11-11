@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from updater import Updater
 from main.anot_window import BooWindow
+from main.quilt import synthesize_texture
 from qt_material import apply_stylesheet
 
 def check_for_updates():
